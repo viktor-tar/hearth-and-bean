@@ -216,8 +216,9 @@ function Booking() {
   /* After an answer: keep the chosen time only if it is still free, and never sit on a part of the day with no times. */
   useEffect(() => {
     if (!day) return;
+    // the sheet's own tables; an older script (before 1.1.0) does not send them, so the standard floor plan applies
     // eslint-disable-next-line react-hooks/set-state-in-effect -- follows the sheet's answer
-    if (day.seating) setSeating(day.seating); // the sheet's own tables
+    setSeating(day.seating ?? STANDARD);
     setC((s) => {
       const n = { ...s };
       if (!day.closed) {
