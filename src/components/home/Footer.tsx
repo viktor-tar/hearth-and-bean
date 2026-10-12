@@ -50,7 +50,7 @@ export default function Footer() {
               About us
             </a>
           </nav>
-          <a href="#reserve" data-hb="footer-cta" className="footer__cta w-inline-block">
+          <a href="#reserve" data-hb="footer-cta" className="footer__cta hb-inline-block">
             <div className="footer__cta-label">
               <div className="footer__cta-line">Reserve</div>
               <div className="footer__cta-line">a table</div>
@@ -113,7 +113,7 @@ export default function Footer() {
           <a href="/staff" className="footer__staff">
             Staff Portal
           </a>
-          <a href="#top" className="footer__top-link w-inline-block">
+          <a href="#top" className="footer__top-link hb-inline-block">
             <div className="footer__top-label">Back to the top</div>
             <svg
               aria-hidden="true"

@@ -8,8 +8,8 @@ export default function MenuRail() {
   const dishes = featuredDishes();
   return (
     <div data-hb="menu-rail" className="menu__rail">
-      <div className="w-dyn-list">
-        <div role="list" className="w-dyn-items">
+      <div className="hb-list">
+        <div role="list" className="hb-items">
           {homeGroups.map((g) => {
             const inGroup = dishes.filter((d) => d.home?.group === g.group);
             if (!inGroup.length) return null;
@@ -19,7 +19,7 @@ export default function MenuRail() {
                 <p className="menu__category-text">{g.text}</p>
               </div>,
               ...inGroup.map((d) => (
-                <div key={d.name} data-group={g.group} role="listitem" className="menu__item w-dyn-item">
+                <div key={d.name} data-group={g.group} role="listitem" className="menu__item hb-item">
                   <div className="menu__item-media">
                     <img src={d.image} loading="lazy" alt="" className="menu__item-image" />
                   </div>
@@ -38,7 +38,7 @@ export default function MenuRail() {
         <p className="menu__end-text">
           That is a taste of the menu. Every dish, with prices, is on its own page.
         </p>
-        <a href="/menu" className="button button--ink w-inline-block">
+        <a href="/menu" className="button button--ink hb-inline-block">
           <div className="button__label">View full menu</div>
           <div className="button__icon button__icon--cream">
             <svg

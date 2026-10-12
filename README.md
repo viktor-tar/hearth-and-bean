@@ -1,92 +1,103 @@
 # Hearth & Bean
 
-The Hearth & Bean website (Walcot Street, Bath), moved off Webflow. It looks and behaves the same as the Webflow
-site: the same pages, design, scroll film, animations, booking form and staff page.
+Website and table-booking system for Hearth & Bean, a neighbourhood restaurant, roastery and bakery on Walcot Street
+in Bath.
 
-- **Pages:** Home (`/`), Menu (`/menu`), About (`/about`), Staff (`/staff`) and the 404 page.
-- **Bookings:** the guest booking form and the staff page talk to the existing Google Sheet through its
-  Google Apps Script web app (`google-apps-script/Code.gs`). Nothing changes in the Sheet or the script.
-- **Hosting:** the site is exported as plain static files, so Netlify hosts all of it. There is no server to run.
+**Live site:** https://hearth-and-bean-bath.netlify.app
+
+## What it does
+
+- **Home page:** a scroll-driven story of the restaurant. A 120-frame film drawn to a canvas opens up as you scroll,
+  then a pinned "one day at the hearth" sequence with a sky that moves from dawn to night. After that come a horizontal
+  menu rail, an interactive dish with hotspots, a draggable staff row and the booking form.
+- **Menu (`/menu`):** the full menu in five categories, with sticky section tabs that follow the scroll.
+- **About (`/about`):** the restaurant's story, opening hours, how to find it and contact details.
+- **Table booking:** guests choose party size, date, part of the day and seating area, and see the times that are
+  really free for their party. The sentence above the form rewrites itself as they choose.
+- **Staff portal (`/staff`):** a signed-in tool for running the day. Staff can answer requests, approve, seat,
+  finish or cancel bookings, add phone bookings and walk-ins, edit bookings, and move a party to another table on a
+  live floor plan with a time slider.
+- **Accessibility and motion:** every control works with the keyboard, the pop-ups follow the ARIA listbox and dialog
+  patterns, and visitors who prefer reduced motion get a still, fully readable page.
 
 ## Tech stack
 
-| Part                                            | What it does                                                                          |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Next.js 16 (App Router) + React 19 + TypeScript | Pages and components, exported as static HTML (`output: 'export'`)                    |
-| TanStack React Query                            | Loading available times, sending booking requests, the staff day view and its actions |
-| Zod                                             | Checks every answer from the booking sheet, and the booking and staff forms           |
-| GSAP (ScrollTrigger, Draggable, Inertia)        | The scroll animations on the home page, as on the Webflow site                        |
-| native `fetch`                                  | All calls to the Apps Script web app                                                  |
-| ESLint + Prettier                               | Code checks and formatting                                                            |
+| Area | Technology |
+| --- | --- |
+| Framework | Next.js 16 (App Router), React 19, TypeScript (strict) |
+| Data fetching | TanStack React Query (queries, mutations, background refresh) with native `fetch` |
+| Validation | Zod: every API response, the booking form and the staff forms |
+| Animation | GSAP with ScrollTrigger, Draggable and Inertia |
+| Backend | Google Apps Script web app over a Google Sheet (`google-apps-script/Code.gs`) |
+| Hosting | Static export (`output: 'export'`) deployed on Netlify from GitHub |
+| Code quality | ESLint (Next.js core web vitals and TypeScript rules), Prettier |
 
-About styling: the design's CSS is kept as it came out of Webflow (`src/styles/webflow.css`) plus the hand-written
-global styles (`src/styles/global.css`, `staff.css`, `menu-page.css`, `home-landscape.css`). Those class names are
-what the animations and the original design rely on, so they stay global instead of being renamed into CSS Modules.
-CSS Modules work out of the box for any new component (`Something.module.css`).
-
-## Folders
+## How it works
 
 ```
-src/app/                 the pages (page.tsx per route), layout, robots.txt, sitemap.xml
-src/components/home/     the home page sections (Hero, Manifesto, Day, Menu, Pan, People, Reserve, Footer …)
-src/components/…         About, Menu, 404 and the shared top bar / footer of the inner pages
-src/data/menu.ts         ALL the dishes: name, description, price, photo, category, and which appear on the home page
-src/features/booking/    the booking form (React Query + Zod)
-src/features/staff/      the staff page (sign in, day view, table plan, new / edit bookings)
-src/features/home/       the home page's scroll animations (motion.ts)
-src/lib/booking-api.ts   the one place that talks to the Google Apps Script (Zod schemas for every answer)
-src/styles/              the design's CSS
-public/images, public/film, public/fonts   photos, the 120 frames of the hero film, the two typefaces
-google-apps-script/      Code.gs (the booking backend) and a local stand-in for testing
+Browser (Next.js static pages)
+  ├── React Query ── fetch (POST, JSON) ──► Google Apps Script web app ──► Google Sheet
+  │                                          (Bookings, Tables, Hours, Settings, Staff tabs)
+  └── Zod checks every answer before the UI uses it
 ```
 
-## Settings (environment variables)
+- **Static first.** Every page is pre-rendered to HTML at build time, so the site is fast and needs no server. Only
+  the booking form and the staff portal are client components.
+- **Booking API.** One module, `src/lib/booking-api.ts`, talks to the backend. Each request is a single POST sent as
+  plain text, so the browser makes a simple request with no CORS preflight. Zod schemas describe every response.
+- **Availability.** The form asks for free times only when the visitor scrolls near it. Answers are cached for 30
+  seconds per date and party size, and quick changes are debounced into one request.
+- **Business rules live in the backend.** A booking holds the smallest free table that fits for 90 minutes (5 or more
+  guests: 120). It has statuses with allowed transitions (waiting, confirmed, seated, finished, no-show, declined,
+  cancelled) and email notifications to the guest and the restaurant. All of these are enforced in `Code.gs` under a
+  script lock, so two guests can never take the same table.
+- **Staff authentication.** Passwords stay in the Sheet. A successful sign-in returns an HMAC-signed token that expires
+  after 12 hours. Every staff action is verified on the server, and repeated failed sign-ins are slowed down.
+- **Content as data.** All 50 dishes (name, description, price, photo, category, home-page placement) live in one typed
+  file, `src/data/menu.ts`, which feeds both the home page rail and the full menu.
+- **Times are the restaurant's.** Dates and times are handled in Europe/London whatever the visitor's own time zone.
 
-| Variable                      | What it is                                                                                                                                                                                        |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_BOOKING_API_URL` | The Apps Script web app address (Apps Script → Deploy → Manage deployments → Web app URL). Empty = the form stays in preview and sends nothing.                                                   |
-| `NEXT_PUBLIC_SITE_URL`        | The site's public address, e.g. `https://hearth-and-bean.netlify.app`. Used for social previews, the canonical link and the sitemap. On Netlify builds from GitHub it is filled in automatically. |
+## Project structure
 
-For work on your computer, put them in `.env.local` (see `.env.example`). `.env.local` is never uploaded to GitHub.
+```
+src/
+  app/                    routes (App Router): /, /menu, /about, /staff, 404, robots.txt, sitemap.xml
+    layout.tsx            root layout, fonts, global styles
+    providers.tsx         React Query client
+  components/
+    home/                 home page sections: Hero, Manifesto, Day, Marquee, Menu, Pan, People, Reserve, Footer
+    menu/, about/, site/  inner pages and their shared header and footer
+  features/
+    booking/              booking form: React Query, custom dropdown and calendar, Zod contact checks
+    staff/                staff portal: sign-in, day view, table plan, booking dialog
+    home/                 scroll animations (GSAP)
+    menu/                 menu page section tabs
+  lib/
+    booking-api.ts        API client and Zod schemas
+    dates.ts              date and time helpers (Europe/London)
+  data/menu.ts            the menu
+  styles/                 design system CSS (base, global, page styles, self-hosted fonts)
+public/                   photos, film frames, fonts, Netlify headers
+google-apps-script/
+  Code.gs                 backend: availability, bookings, staff sign-in and actions, emails
+  local-test/             runs Code.gs locally against in-memory sheets, for development and tests
+```
 
-The booking address is not a secret: browsers see it whenever someone books, as on the Webflow site. Security comes
-from the script itself: the staff password stays in the Sheet's Staff tab, staff actions need a signed token that
-runs out after 12 hours, and every request is checked and cleaned on the Google side.
+## Running locally
 
-## Run it on your computer
-
-Needs Node.js 20.9 or newer.
+Requires Node.js 20.9 or newer.
 
 ```bash
 npm install
+npm run mock-api     # local booking backend on :8792 (test sign-in: staff / local-test-pass)
 npm run dev          # http://localhost:3000
 ```
 
-Other commands: `npm run build` (makes the `out/` folder), `npm start` (serves `out/`), `npm run lint`,
-`npm run typecheck`, `npm run format`.
+Environment variables (see `.env.example`):
 
-To try bookings without touching the real Sheet: `npm run mock-api`, then set
-`NEXT_PUBLIC_BOOKING_API_URL=http://localhost:8792` in `.env.local`. The test sign-in is `staff` / `local-test-pass`.
+| Variable | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_BOOKING_API_URL` | Booking backend address. When empty, the form runs in preview mode and sends nothing. |
+| `NEXT_PUBLIC_SITE_URL` | Public site address for canonical links, social previews and the sitemap (set automatically on Netlify). |
 
-## Deploy on Netlify
-
-**Option A, from GitHub (recommended).** In Netlify: Add new project → Import an existing project → GitHub →
-`hearth-and-bean`. The build settings come from `netlify.toml` (`npm run build`, publish `out`). Before the first
-deploy, add `NEXT_PUBLIC_BOOKING_API_URL` under Project configuration → Environment variables. Every push to `main`
-then redeploys the site.
-
-**Option B, drag and drop.** Run `npm run build` (with `.env.local` filled in) and drag the `out` folder onto
-Netlify's deploy page. Netlify does not build anything in this mode, so drop the built `out` folder, not the source.
-
-## After the move
-
-- In the Google Sheet, Settings tab: change `portalUrl` to the new staff page address (for example
-  `https://<your-site>.netlify.app/staff`). Restaurant emails link to it. It still points at the Webflow site.
-- The script itself does not need a new deployment: the web app address stays the same.
-
-## Changing things
-
-- **A dish or a price:** edit `src/data/menu.ts`. A dish with `home` set also appears on the home page rail.
-  New photos go in `public/images/dishes`.
-- **Opening hours, tables, staff sign-ins, booking rules:** in the Google Sheet, exactly as before.
-- **Text on a page:** the section components in `src/components`.
+Scripts: `npm run build` (static export to `out/`), `npm run lint`, `npm run typecheck`, `npm run format`.

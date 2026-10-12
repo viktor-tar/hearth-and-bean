@@ -1,7 +1,7 @@
 export default function Nav() {
   return (
     <nav data-hb="nav" aria-label="Main" className="nav">
-      <a href="#top" aria-label="Hearth & Bean, back to the top" className="nav__logo w-inline-block">
+      <a href="#top" aria-label="Hearth & Bean, back to the top" className="nav__logo hb-inline-block">
         <img
           src="/images/hb-logo-colour.webp"
           loading="eager"

@@ -5,7 +5,7 @@ export default function NotFoundContent() {
         <a
           href="/"
           aria-label="Hearth & Bean, back to the front page"
-          className="notfound__logo w-inline-block"
+          className="notfound__logo hb-inline-block"
         >
           <img src="/images/hb-logo-colour.webp" loading="lazy" alt="" className="notfound__logo-image" />
         </a>
@@ -16,7 +16,7 @@ export default function NotFoundContent() {
             <p className="notfound__text">
               The page you were after has moved or never existed. The front door is still open.
             </p>
-            <a href="/" className="button button--ink w-inline-block">
+            <a href="/" className="button button--ink hb-inline-block">
               <div className="button__label">Back to the front door</div>
               <div className="button__icon button__icon--cream">
                 <svg

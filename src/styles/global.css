@@ -178,9 +178,9 @@ button {
 }
 
 /* one day: a wide photo with its caption, and a sky window where the sun becomes the moon */
-.day__sun .w-embed,
-.day__moon .w-embed,
-.day__stars .w-embed {
+.day__sun .hb-embed,
+.day__moon .hb-embed,
+.day__stars .hb-embed {
   width: 100%;
   height: 100%;
 }
@@ -308,8 +308,8 @@ button {
 .people__view::-webkit-scrollbar {
   display: none;
 }
-.menu__rail .w-dyn-list,
-.menu__rail .w-dyn-items {
+.menu__rail .hb-list,
+.menu__rail .hb-items {
   display: contents;
 }
 .menu--pin .menu__stage {
@@ -653,8 +653,8 @@ html:not(.hb-js) .pan__row-detail {
   outline: 2px solid var(--hb-leaf);
   outline-offset: 2px;
 }
-.reserve__form-block .w-form-done,
-.reserve__form-block .w-form-fail {
+.reserve__form-block .hb-form-done,
+.reserve__form-block .hb-form-fail {
   margin-top: 20px;
   padding: 20px 24px;
   border: 1px solid rgba(243, 235, 221, 0.2);

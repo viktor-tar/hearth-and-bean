@@ -45,7 +45,7 @@ export default function Hero() {
               <span className="line-mask">until the last table leaves.</span>
             </p>
             <div className="hero__actions">
-              <a href="#reserve" className="button button--cream w-inline-block">
+              <a href="#reserve" className="button button--cream hb-inline-block">
                 <div className="button__label">Reserve a table</div>
                 <div className="button__icon button__icon--roast">
                   <svg

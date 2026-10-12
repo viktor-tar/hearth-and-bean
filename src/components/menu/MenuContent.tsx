@@ -42,7 +42,7 @@ export default function MenuContent() {
         <div className="container">
           <h2 className="display fullmenu__close-title">Found something for the table?</h2>
           <div className="fullmenu__close-actions">
-            <a href="/#reserve" className="button button--cream w-inline-block">
+            <a href="/#reserve" className="button button--cream hb-inline-block">
               <div className="button__label">Reserve a table</div>
               <div className="button__icon button__icon--roast">
                 <svg

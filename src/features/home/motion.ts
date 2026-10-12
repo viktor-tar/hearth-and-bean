@@ -1,5 +1,5 @@
 /*
- * Hearth & Bean: the home page's interaction layer (ported unchanged in behaviour from the Webflow build's app.js).
+ * Hearth & Bean: the home page's interaction layer.
  *
  * Elements are found through [data-hb="…"] attributes and their classes, so the markup in
  * src/components/home can change freely as long as those stay.

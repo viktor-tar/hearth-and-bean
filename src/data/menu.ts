@@ -1,6 +1,5 @@
 /**
  * The menu: one list feeds both the full menu page (/menu) and the "On the counter" rail on the home page.
- * This replaces the Webflow CMS collection "Dishes".
  *
  * To change a dish, edit it here. To add one, add an entry with a category and a menuOrder.
  * Give it `home` (a group and an order) to also show it on the home page.

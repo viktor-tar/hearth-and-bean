@@ -37,7 +37,7 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    // "body" carries the page's base type and colour (the Webflow build set it on <body> on this page only)
+    // "body" carries the home page's base type and colour
     <div className="body">
       <HomeMotionMode />
       <div className="page">

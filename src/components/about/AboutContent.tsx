@@ -223,7 +223,7 @@ export default function AboutContent() {
                 </div>
               </dl>
               <div className="about__actions">
-                <a href="/#reserve" className="button button--cream w-inline-block">
+                <a href="/#reserve" className="button button--cream hb-inline-block">
                   <div className="button__label">Reserve a table</div>
                   <div className="button__icon button__icon--roast">
                     <svg
@@ -248,7 +248,7 @@ export default function AboutContent() {
               </div>
             </div>
             <div id="map" className="about__map">
-              <div className="w-embed">
+              <div className="hb-embed">
                 <iframe
                   className="about__map-frame"
                   title="Map: Hearth & Bean, Walcot Street, Bath"

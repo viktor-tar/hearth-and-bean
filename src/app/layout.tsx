@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { SITE_URL } from '@/lib/site';
 import Providers from './providers';
 import '@/styles/fonts.css';
-import '@/styles/webflow.css';
+import '@/styles/base.css';
 import '@/styles/global.css';
 
 export const metadata: Metadata = {

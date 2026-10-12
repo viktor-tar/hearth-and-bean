@@ -12,10 +12,10 @@ export default function MenuSections() {
                 <h2 className="display fullmenu__heading">{c.title}</h2>
               </div>
               <div className="fullmenu__list">
-                <div className="w-dyn-list">
-                  <div role="list" className="fullmenu__items w-dyn-items">
+                <div className="hb-list">
+                  <div role="list" className="fullmenu__items hb-items">
                     {dishesIn(c.id).map((d) => (
-                      <div key={d.name} role="listitem" className="w-dyn-item">
+                      <div key={d.name} role="listitem" className="hb-item">
                         <div className="dish">
                           <div className="dish__media">
                             <img

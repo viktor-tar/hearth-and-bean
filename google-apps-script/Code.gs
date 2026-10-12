@@ -19,7 +19,7 @@ var HB_BOOKING_COLS = ['id', 'ref', 'created', 'date', 'time', 'guests', 'durati
 var HB_DEFAULT_SETTINGS = [
   ['restaurantName', 'Hearth & Bean', 'Name used in emails'],
   ['restaurantEmail', 'vikstarweb@gmail.com', 'New booking requests are emailed here'],
-  ['portalUrl', 'https://cafe-website-2b1f95.webflow.io/staff', 'Link to the staff page, used in emails to the restaurant'],
+  ['portalUrl', 'https://hearth-and-bean-bath.netlify.app/staff', 'Link to the staff page, used in emails to the restaurant'],
   ['timezone', 'Europe/London', 'Time zone the restaurant runs on'],
   ['slotMinutes', '30', 'Minutes between bookable times'],
   ['durationSmall', '90', 'Minutes a table is held for 1 to 4 guests'],

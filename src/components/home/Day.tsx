@@ -9,7 +9,7 @@ export default function Day() {
           <div data-hb="day-sky" aria-hidden="true" className="day__sky">
             <div className="day__haze" />
             <div className="day__stars">
-              <div className="w-embed">
+              <div className="hb-embed">
                 <svg
                   viewBox="0 0 100 130"
                   preserveAspectRatio="xMidYMid slice"
@@ -38,7 +38,7 @@ export default function Day() {
               </div>
             </div>
             <div className="day__sun">
-              <div className="w-embed">
+              <div className="hb-embed">
                 <svg viewBox="0 0 240 240" aria-hidden="true" focusable="false">
                   <defs>
                     <radialGradient id="hb-sun-glow" cx="50%" cy="50%" r="50%">
@@ -85,7 +85,7 @@ export default function Day() {
               </div>
             </div>
             <div className="day__moon">
-              <div className="w-embed">
+              <div className="hb-embed">
                 <svg viewBox="0 0 240 240" aria-hidden="true" focusable="false">
                   <defs>
                     <radialGradient id="hb-moon-glow" cx="50%" cy="50%" r="50%">

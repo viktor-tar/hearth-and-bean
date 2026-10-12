@@ -2,5 +2,5 @@
 out
 node_modules
 public
-src/styles/webflow.css
+src/styles/base.css
 google-apps-script

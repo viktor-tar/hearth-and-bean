@@ -14,14 +14,14 @@ export default function SubFooter({ current }: { current: Page }) {
         <a
           href="/"
           aria-label="Hearth & Bean, back to the front page"
-          className="subfooter__logo w-inline-block"
+          className="subfooter__logo hb-inline-block"
         >
           <img src="/images/hb-logo-cream.webp" loading="lazy" alt="" className="footer__logo" />
         </a>
         <nav aria-label="Footer" className="subfooter__links">
           {LINKS.map((l) =>
             l.page === current ? (
-              <a key={l.page} href={l.href} aria-current="page" className="subfooter__link w--current">
+              <a key={l.page} href={l.href} aria-current="page" className="subfooter__link is-current">
                 {l.label}
               </a>
             ) : (
@@ -82,7 +82,7 @@ export default function SubFooter({ current }: { current: Page }) {
       </div>
       <div className="footer__base">
         <div className="footer__copyright">© 2026 Hearth &amp; Bean</div>
-        <a href="#top" className="footer__top-link w-inline-block">
+        <a href="#top" className="footer__top-link hb-inline-block">
           <div className="footer__top-label">Back to the top</div>
           <svg
             aria-hidden="true"

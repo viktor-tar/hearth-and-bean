@@ -32,7 +32,7 @@ export default function Menu() {
           <div aria-hidden="true" className="progress">
             <div data-hb="menu-bar" className="progress__bar" />
           </div>
-          <a href="/menu" className="menu__all w-inline-block">
+          <a href="/menu" className="menu__all hb-inline-block">
             <div className="menu__all-label">View full menu</div>
             <svg
               aria-hidden="true"

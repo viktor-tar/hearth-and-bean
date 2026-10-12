@@ -10,7 +10,7 @@ const LINKS: { page: Page; href: string; label: string }[] = [
 export default function SubNav({ current }: { current: Page }) {
   return (
     <header className="subnav">
-      <a href="/" aria-label="Hearth & Bean, back to the front page" className="nav__logo w-inline-block">
+      <a href="/" aria-label="Hearth & Bean, back to the front page" className="nav__logo hb-inline-block">
         <img
           src="/images/hb-logo-colour.webp"
           loading="lazy"
@@ -25,7 +25,7 @@ export default function SubNav({ current }: { current: Page }) {
               key={l.page}
               href={l.href}
               aria-current="page"
-              className="nav__link nav__link--current w--current"
+              className="nav__link nav__link--current is-current"
             >
               {l.label}
             </a>

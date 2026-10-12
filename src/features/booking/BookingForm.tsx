@@ -611,7 +611,7 @@ function Booking() {
           {note}
         </p>
       </div>
-      <div className="reserve__form-block w-form" hidden={!!done}>
+      <div className="reserve__form-block hb-form" hidden={!!done}>
         <form
           name="reservation"
           noValidate
@@ -693,12 +693,12 @@ function Booking() {
             </span>
           </button>
         </form>
-        <div className="w-form-done">
+        <div className="hb-form-done">
           <div className="reserve__form-message">
             Thank you. Your request is with us and we will confirm with you directly.
           </div>
         </div>
-        <div className="w-form-fail">
+        <div className="hb-form-fail">
           <div className="reserve__form-message">
             Something went wrong and your request was not sent. Please try again.
           </div>
@@ -760,7 +760,7 @@ function Field({
       </label>
       <input
         ref={inputRef}
-        className="reserve__input w-input"
+        className="reserve__input hb-input"
         autoComplete={props.autoComplete}
         maxLength={256}
         name={props.name}
