@@ -1,0 +1,14 @@
+html {
+  scroll-behavior: auto;
+}
+.fullmenu__tabs-inner::-webkit-scrollbar {
+  display: none;
+}
+.fullmenu__tab.is-on {
+  background-color: var(--hb-ink);
+  border-color: var(--hb-ink);
+  color: var(--hb-cream);
+}
+.fullmenu [tabindex='-1']:focus {
+  outline: none;
+}

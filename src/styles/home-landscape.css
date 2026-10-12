@@ -1,0 +1,117 @@
+/* Hearth & Bean: short landscape phones and tablet portrait (12 Oct 2026). Desktop is not affected. */
+@media (max-width: 991px) and (orientation: landscape) and (max-height: 540px) {
+  .hero__stage {
+    min-height: 0;
+    height: 100svh;
+  }
+  .hero__type {
+    font-size: min(13.4vw, 23svh);
+  }
+  .hero__line.hero__line--first {
+    top: 20%;
+  }
+  .hero__line.hero__line--second {
+    bottom: 24%;
+  }
+  .hero__meta {
+    bottom: 5%;
+  }
+  .hero__meta-text {
+    max-width: 10.5em;
+  }
+  .display.hero__statement {
+    font-size: min(5.2vw, 8svh);
+    max-width: 16em;
+  }
+  .hero__act {
+    top: 36% !important;
+  }
+  .manifesto {
+    margin-top: -48px !important;
+    padding-top: 84px !important;
+  }
+  .manifesto__figure.manifesto__figure--tall {
+    width: auto;
+    height: 78svh;
+  }
+  .manifesto__figure.manifesto__figure--wide {
+    width: auto;
+    height: 44svh;
+    margin: -48svh 6% 0 auto;
+  }
+  .day__sky {
+    height: clamp(56px, 17svh, 84px);
+  }
+  .day:not(.day--pin) .day__chapter {
+    grid-template-columns: minmax(0, 44%) minmax(0, 1fr);
+    column-gap: 28px;
+    align-items: center;
+    padding-top: 22px;
+    padding-bottom: 22px;
+  }
+  .day:not(.day--pin) .day__photo {
+    order: 0;
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    max-height: 62svh;
+  }
+  .day:not(.day--pin) .day__word {
+    grid-column: 2;
+    align-self: end;
+    font-size: min(9.6vw, 15svh);
+  }
+  .day:not(.day--pin) .day__copy {
+    grid-column: 2;
+    align-self: start;
+  }
+  .menu {
+    --menu-card: min(30vw, 34svh);
+  }
+  .menu__stage {
+    padding-top: 76px;
+    padding-bottom: 24px;
+  }
+  .menu__head {
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+  .display.menu__title {
+    font-size: min(10vw, 13svh);
+  }
+  .menu__category {
+    width: 22vw;
+  }
+  .menu__item {
+    width: min(28vw, 240px);
+  }
+  .grid.pan__grid {
+    flex-direction: row;
+    align-items: center;
+    gap: 32px;
+  }
+  .pan__disc {
+    flex: none;
+    width: 44%;
+    max-width: 82svh;
+  }
+  .pan__side {
+    flex: 1;
+    min-width: 0;
+  }
+  .hb-nav-off .nav {
+    transform: translateY(-110%) !important;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      transform 0.4s ease,
+      visibility 0s linear 0.4s;
+  }
+}
+@media (min-width: 600px) and (max-width: 991px) and (orientation: portrait) {
+  .menu {
+    --menu-card: min(44vw, 38vh);
+  }
+  .menu__category {
+    width: 32vw;
+  }
+}

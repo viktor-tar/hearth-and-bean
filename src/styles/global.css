@@ -1,0 +1,688 @@
+/* Hearth & Bean — global styles that cannot live in the Style panel:
+   resets, state classes written by the script, pseudo-elements, keyframes and
+   custom-property driven shapes. Class styling itself lives in the Designer. */
+:root {
+  --page-gutter: clamp(18px, var(--_hearth-bean---gutter, 4.2vw), 68px);
+  --arch-depth: var(--_hearth-bean---arch-depth, 15vw);
+  --hb-cream: var(--_hearth-bean---cream, #f3ebdd);
+  --hb-roast: var(--_hearth-bean---roast, #2a1a11);
+  --hb-ink: var(--_hearth-bean---ink, #36261a);
+  --hb-leaf: var(--_hearth-bean---leaf, #bda468);
+  --hb-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  color-scheme: light;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  background-color: var(--hb-cream);
+  -webkit-font-smoothing: antialiased;
+}
+img {
+  display: block;
+}
+h1,
+h2,
+h3,
+h4,
+p,
+ol,
+ul,
+figure {
+  margin: 0;
+  padding: 0;
+}
+ol,
+ul {
+  list-style: none;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  cursor: pointer;
+  text-align: inherit;
+}
+:focus-visible {
+  outline: 2px solid var(--hb-leaf);
+  outline-offset: 4px;
+}
+[hidden] {
+  display: none !important;
+}
+
+/* loading and cursor */
+.hb-motion .loader {
+  display: grid;
+}
+.hb-loaded .loader {
+  opacity: 0;
+  visibility: hidden;
+}
+.hb-motion:not(.hb-loaded) body {
+  overflow: hidden;
+}
+.hb-fine .cursor {
+  display: grid;
+}
+
+/* nav states */
+.nav.is-dark {
+  color: var(--hb-cream);
+}
+.nav.is-hidden {
+  transform: translateY(-110%);
+}
+.nav.is-dark .nav__logo-image--dark {
+  opacity: 1;
+}
+.nav.is-dark .nav__logo-image--light {
+  opacity: 0;
+}
+.nav.is-dark .nav__cta:hover {
+  background: var(--hb-cream);
+  color: var(--hb-roast);
+  border-color: var(--hb-cream);
+}
+.nav.nav--static {
+  position: absolute;
+}
+
+/* buttons */
+.button:hover .button__arrow {
+  transform: translateX(3px) rotate(-45deg);
+}
+[data-hb='people-next']:hover .round-button__icon {
+  transform: translateX(4px);
+}
+[data-hb='people-prev']:hover .round-button__icon {
+  transform: translateX(-4px);
+}
+.footer__top-link:hover .footer__top-icon {
+  transform: translateY(-4px);
+}
+.line-mask__inner {
+  display: block;
+}
+
+/* hero: the film opens through the arch */
+.hero__aperture {
+  --at: 19%;
+  --as: 37%;
+  --ab: 9%;
+  --ar: 13vw;
+  clip-path: inset(var(--at) var(--as) var(--ab) var(--as) round var(--ar) var(--ar) 0 0);
+}
+.hero__film canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.hero__act {
+  visibility: hidden;
+}
+.hero__cue-dot {
+  animation: hb-cue 1.8s var(--hb-ease) infinite;
+}
+@keyframes hb-cue {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(200%);
+  }
+}
+.hb-motion .hero__poster {
+  display: none;
+}
+.hb-motion .manifesto {
+  margin-top: -50vh;
+}
+/* still version: reduced motion, or the animation library did not load */
+.hb-static .hero__aperture {
+  --at: 0%;
+  --as: 0%;
+  --ab: 0%;
+  --ar: 0vw;
+}
+.hb-static .hero__type--ink,
+.hb-static .hero__film,
+.hb-static .hero__cue {
+  display: none;
+}
+.hb-static .hero__poster {
+  transform: none;
+  object-position: 60% 50%;
+}
+.hb-static .hero__scrim {
+  opacity: 0.75;
+}
+.hb-static .hero__cue-dot {
+  animation: none;
+}
+
+/* sheets: sections that rise with an arched top edge */
+[data-sheet] {
+  --arc: var(--arch-depth);
+  border-radius: 50% 50% 0 0 / var(--arc) var(--arc) 0 0;
+}
+.hb-static [data-sheet] {
+  --arc: 0vw;
+}
+
+/* one day: a wide photo with its caption, and a sky window where the sun becomes the moon */
+.day__sun .w-embed,
+.day__moon .w-embed,
+.day__stars .w-embed {
+  width: 100%;
+  height: 100%;
+}
+.day__sun svg,
+.day__moon svg,
+.day__stars svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.day__step.is-on {
+  opacity: 1;
+  border-bottom-color: currentColor;
+}
+.day--pin .day__stage {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  column-gap: clamp(40px, 5.5vw, 84px);
+  row-gap: clamp(14px, 2.4vh, 26px);
+  height: 100vh;
+  min-height: 620px;
+  padding: clamp(92px, 12vh, 120px) var(--page-gutter) clamp(22px, 3.6vh, 36px);
+  overflow: hidden;
+}
+.day--pin .day__head {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
+}
+.day--pin .day__skybox {
+  grid-column: 2;
+  grid-row: 1 / 4;
+  display: flex;
+  margin: 0;
+  min-height: 0;
+}
+.day--pin .day__sky {
+  flex: 1;
+  height: auto;
+}
+.day--pin .day__sun,
+.day--pin .day__moon {
+  width: 52%;
+  height: auto;
+}
+.day--pin .day__hill {
+  left: -25%;
+  top: 83%;
+  width: 150%;
+  height: 42%;
+}
+.day--pin .day__list {
+  grid-column: 1;
+  grid-row: 2;
+  display: grid;
+  min-height: 0;
+}
+.day--pin .day__chapter {
+  grid-area: 1 / 1;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  column-gap: clamp(24px, 3vw, 44px);
+  row-gap: clamp(14px, 2.6vh, 28px);
+  min-height: 0;
+  padding: 0;
+  border: 0;
+}
+.day--pin .day__photo {
+  grid-column: 1 / 3;
+  grid-row: 1;
+  order: 0;
+  height: 100%;
+  aspect-ratio: auto;
+}
+.day--pin .day__word {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: start;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+  font-size: clamp(44px, min(5.2vw, 11.5vh), 98px);
+}
+.day--pin .day__copy {
+  grid-column: 2;
+  grid-row: 2;
+  min-height: 6.2em;
+  margin-top: 0.45em;
+}
+.day--pin .day__foot {
+  grid-column: 1;
+  grid-row: 3;
+  display: flex;
+}
+.day--strip .day__skybox {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  padding-top: 10px;
+}
+@media (min-width: 992px) {
+  .day:not(.day--pin) .day__chapter {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    column-gap: 40px;
+    align-items: end;
+  }
+  .day:not(.day--pin) .day__photo {
+    order: 0;
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    width: 300px;
+  }
+}
+
+/* running text */
+.marquee__row--outline {
+  -webkit-text-stroke: 1px rgba(243, 235, 221, 0.55);
+}
+
+/* menu */
+.menu {
+  --menu-card: min(27vw, 45vh);
+}
+.menu__rail::-webkit-scrollbar,
+.people__view::-webkit-scrollbar {
+  display: none;
+}
+.menu__rail .w-dyn-list,
+.menu__rail .w-dyn-items {
+  display: contents;
+}
+.menu--pin .menu__stage {
+  height: 100vh;
+  min-height: 600px;
+}
+.menu--pin .menu__rail {
+  width: max-content;
+  overflow: visible;
+  scroll-snap-type: none;
+  will-change: transform;
+}
+.menu__filter.is-on {
+  background: var(--hb-ink);
+  color: var(--hb-cream);
+  border-color: var(--hb-ink);
+}
+.menu__item:hover .menu__item-image {
+  scale: 1.07;
+}
+
+/* the pan: one marker at a time, shown only while its line is active */
+.hb-js .pan__hotspot {
+  opacity: 0;
+  transform: scale(0.4);
+  transition:
+    opacity 0.3s ease,
+    transform 0.45s var(--hb-ease);
+}
+.hb-js .pan__hotspot.is-on {
+  opacity: 1;
+  transform: none;
+}
+.hb-motion .pan__hotspot.is-on .pan__hotspot-ring {
+  animation: hb-ping 1.8s ease-out infinite;
+}
+.hb-static .pan__hotspot.is-on .pan__hotspot-ring {
+  opacity: 0.9;
+}
+@keyframes hb-ping {
+  0% {
+    transform: scale(0.55);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+.pan__row.is-on .pan__row-name {
+  color: var(--hb-leaf);
+  transform: translateX(10px);
+}
+.pan__row.is-on .pan__row-detail {
+  max-height: var(--pan-h, 5em);
+  opacity: 1;
+}
+html:not(.hb-js) .pan__row-detail {
+  max-height: none;
+  opacity: 1;
+}
+
+/* people */
+.people--drag .people__view {
+  overflow: visible;
+  touch-action: pan-y;
+}
+.people--drag .people__track {
+  cursor: grab;
+}
+.people--drag .people__track:active {
+  cursor: grabbing;
+}
+.person:hover .person__image {
+  scale: 1.05;
+}
+
+/* reserve: the menus, the calendar, the parts of the day and the times are written by the booking script */
+.reserve__group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 10px;
+}
+.reserve__group + .reserve__group {
+  margin-top: 18px;
+}
+.reserve__group-label {
+  flex: 0 0 100%;
+  font-size: 14px;
+  color: rgba(243, 235, 221, 0.68);
+}
+.reserve__slot {
+  min-width: 86px;
+  height: 46px;
+  padding: 0 18px;
+  border: 1px solid rgba(243, 235, 221, 0.4);
+  border-radius: 999px;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  transition:
+    background-color 0.25s,
+    color 0.25s,
+    border-color 0.25s;
+}
+@media (hover: hover) {
+  .reserve__slot:hover {
+    border-color: var(--hb-leaf);
+    color: var(--hb-leaf);
+  }
+}
+.reserve__slot[aria-pressed='true'] {
+  background: var(--hb-leaf);
+  border-color: var(--hb-leaf);
+  color: var(--hb-roast);
+}
+.reserve__select {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 52px;
+  padding: 0 42px 0 20px;
+  border: 1px solid rgba(243, 235, 221, 0.4);
+  border-radius: 999px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%23F3EBDD' stroke-width='1.6'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E")
+    no-repeat right 18px center / 12px 8px;
+  color: rgba(243, 235, 221, 0.68);
+  font-size: 16px;
+  line-height: 1.2;
+  transition:
+    border-color 0.25s,
+    color 0.25s;
+}
+.reserve__select-text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.reserve__select.is-set {
+  border-color: var(--hb-leaf);
+  color: var(--hb-cream);
+}
+.reserve__select[aria-expanded='true'] {
+  border-color: var(--hb-cream);
+  color: var(--hb-cream);
+}
+@media (hover: hover) {
+  .reserve__select:hover {
+    border-color: var(--hb-leaf);
+  }
+}
+/* the opened menu and the calendar */
+.reserve__menu,
+.reserve__cal {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 8px);
+  left: 0;
+  border: 1px solid rgba(243, 235, 221, 0.22);
+  border-radius: 20px;
+  background: #1a0f09;
+  color: var(--hb-cream);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  animation: hb-pop 0.2s var(--hb-ease);
+}
+@keyframes hb-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+.reserve__menu {
+  min-width: 100%;
+  padding: 8px;
+  outline: 0;
+}
+.reserve__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  font-size: 16px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.reserve__option.is-at {
+  background: rgba(243, 235, 221, 0.1);
+}
+.reserve__option[aria-selected='true'] {
+  color: var(--hb-leaf);
+}
+.reserve__option[aria-selected='true']::after {
+  content: '';
+  flex: none;
+  width: 13px;
+  height: 7px;
+  border-left: 1.6px solid;
+  border-bottom: 1.6px solid;
+  transform: translateY(-2px) rotate(-45deg);
+}
+.reserve__cal {
+  width: 316px;
+  max-width: calc(100vw - 36px);
+  padding: 16px;
+}
+.reserve__cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.reserve__cal-month {
+  font-family: var(--_hearth-bean---font-display, Gloock, Georgia, serif);
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.reserve__cal-nav {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(243, 235, 221, 0.25);
+  border-radius: 50%;
+  transition: border-color 0.25s;
+}
+.reserve__cal-nav--next svg {
+  transform: rotate(180deg);
+}
+.reserve__cal-nav[aria-disabled='true'] {
+  opacity: 0.3;
+  cursor: default;
+}
+@media (hover: hover) {
+  .reserve__cal-nav:not([aria-disabled='true']):hover {
+    border-color: var(--hb-cream);
+  }
+}
+.reserve__cal-week,
+.reserve__cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.reserve__cal-week {
+  margin-bottom: 4px;
+  font-size: 12px;
+  line-height: 24px;
+  color: rgba(243, 235, 221, 0.55);
+  text-align: center;
+}
+.reserve__cal-day {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+.reserve__cal-day:disabled {
+  color: rgba(243, 235, 221, 0.25);
+  cursor: default;
+}
+.reserve__cal-day.is-today {
+  box-shadow: inset 0 0 0 1px rgba(243, 235, 221, 0.45);
+}
+@media (hover: hover) {
+  .reserve__cal-day:not(:disabled):hover {
+    background: rgba(243, 235, 221, 0.12);
+  }
+}
+.reserve__cal-day[aria-pressed='true'] {
+  background: var(--hb-leaf);
+  color: var(--hb-roast);
+}
+.reserve__cal-day:focus-visible,
+.reserve__cal-nav:focus-visible {
+  outline-offset: 1px;
+}
+.reserve__hint {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(243, 235, 221, 0.6);
+}
+.reserve__hint:empty {
+  display: none;
+}
+.reserve__tab {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(243, 235, 221, 0.25);
+  border-radius: 999px;
+  font-size: 14px;
+  color: rgba(243, 235, 221, 0.68);
+  transition:
+    background-color 0.25s,
+    color 0.25s,
+    border-color 0.25s;
+}
+@media (hover: hover) {
+  .reserve__tab:hover {
+    border-color: var(--hb-cream);
+    color: var(--hb-cream);
+  }
+}
+.reserve__tab[aria-pressed='true'] {
+  background: rgba(243, 235, 221, 0.12);
+  border-color: var(--hb-cream);
+  color: var(--hb-cream);
+}
+.reserve__off {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-right: 14px;
+  font-size: 15px;
+  color: rgba(243, 235, 221, 0.6);
+}
+.reserve__off-time {
+  font-variant-numeric: tabular-nums;
+  text-decoration: line-through;
+}
+.reserve__slots.is-loading {
+  opacity: 0.45;
+}
+.reserve__form [type='submit'][disabled] {
+  opacity: 0.6;
+  cursor: default;
+}
+.reserve__input::placeholder {
+  color: rgba(243, 235, 221, 0.4);
+}
+.reserve__input:focus-visible {
+  outline: 2px solid var(--hb-leaf);
+  outline-offset: 2px;
+}
+.reserve__form-block .w-form-done,
+.reserve__form-block .w-form-fail {
+  margin-top: 20px;
+  padding: 20px 24px;
+  border: 1px solid rgba(243, 235, 221, 0.2);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--hb-cream);
+  text-align: left;
+}
+
+@media (max-width: 991px) {
+  .hero__aperture {
+    --at: 27%;
+    --as: 23%;
+    --ab: 19%;
+    --ar: 27vw;
+  }
+  .hb-motion .manifesto {
+    margin-top: -40vh;
+  }
+  .menu {
+    --menu-card: min(82vw, 52vh);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero__cue-dot,
+  .pan__hotspot-ring,
+  .reserve__menu,
+  .reserve__cal {
+    animation: none;
+  }
+}

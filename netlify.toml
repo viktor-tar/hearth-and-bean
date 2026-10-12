@@ -1,0 +1,10 @@
+# Netlify builds the site from GitHub with these settings (nothing to fill in by hand).
+# For a drag-and-drop deploy, run `npm run build` locally and drop the `out` folder instead.
+[build]
+  command = "npm run build"
+  publish = "out"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Response headers live in public/_headers so they also apply to a drag-and-drop deploy.
