@@ -43,17 +43,16 @@ Netlify build
   └── sync-menu: Menu tab + photos ──► Zod ──► typed menu data + static images ──► next build
 ```
 
-- **Static first.** Every page is pre-rendered, so the site is fast and needs no server. Only the booking form and
-  the staff portal fetch data in the browser.
-- **One API client.** `src/lib/booking-api.ts` sends every request as a single POST and checks each answer with Zod
-  before the UI uses it. Read-only requests are retried once if the network drops; changes are never sent twice.
-- **Rules live in the backend.** Table assignment, booking statuses, opening hours and emails are enforced in
-  `google-apps-script/Code.gs` under a lock, so two guests can never take the same table.
-- **Staff sign-in.** Passwords stay in the Sheet; a sign-in returns an HMAC-signed token that expires after 12 hours,
-  and every staff action is verified on the server.
-- **Menu publishing.** When staff save a dish, the website is rebuilt with the new menu. If a dish in the Sheet has a
-  mistake (for example, a missing price), the update stops and the website keeps the previous menu, so visitors never
-  see a broken page. Photos that haven't changed are reused, which keeps each update to about 20 seconds.
+- **Static site.** All pages are pre-rendered at build time, so the site loads fast and needs no server of its own.
+  Only the booking form and the staff portal load live data.
+- **Typed API layer.** `src/lib/booking-api.ts` is the single client for the backend. Every response is validated
+  with Zod, so the UI only works with typed, checked data.
+- **Server-side business rules.** Availability, table assignment and booking statuses are enforced in the backend,
+  which prevents double bookings.
+- **Secure staff access.** Staff sign in with signed tokens that expire after 12 hours, and every staff action is
+  verified on the server.
+- **Content managed by staff.** Dishes are stored in Google Sheets and Drive and edited in the staff portal. Saving
+  triggers a Netlify rebuild, so the public menu updates without a developer.
 
 ![Menu page](docs/screenshots/menu.jpg)
 
