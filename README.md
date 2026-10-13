@@ -1,97 +1,77 @@
 # Hearth & Bean
 
-Website and table-booking system for Hearth & Bean, a neighbourhood restaurant, roastery and bakery on Walcot Street
-in Bath.
+A café-restaurant website with online table booking and a staff portal for managing bookings and the menu.
 
-**Live site:** https://hearth-and-bean-bath.netlify.app
+**Live site:** [hearth-and-bean-bath.netlify.app](https://hearth-and-bean-bath.netlify.app)
 
-## What it does
+![Hearth & Bean home page](docs/screenshots/home.jpg)
 
-- **Home page:** a scroll-driven story of the restaurant. A 120-frame film drawn to a canvas opens up as you scroll,
-  then a pinned "one day at the hearth" sequence with a sky that moves from dawn to night. After that come a horizontal
-  menu rail, an interactive dish with hotspots, a draggable staff row and the booking form.
-- **Menu (`/menu`):** the full menu in five categories, with sticky section tabs that follow the scroll.
-- **About (`/about`):** the restaurant's story, opening hours, how to find it and contact details.
-- **Table booking:** guests choose party size, date, part of the day and seating area, and see the times that are
-  really free for their party. The sentence above the form rewrites itself as they choose.
-- **Staff portal (`/staff`):** a signed-in tool for running the day. Staff can answer requests, approve, seat,
-  finish or cancel bookings, add phone bookings and walk-ins, edit bookings, and move a party to another table on a
-  live floor plan with a time slider. A Menu view lets them edit, add and hide dishes, upload new photos (resized in
-  the browser) and publish the menu.
-- **Accessibility and motion:** every control works with the keyboard, the pop-ups follow the ARIA listbox and dialog
-  patterns, and visitors who prefer reduced motion get a still, fully readable page.
+## Features
+
+- **Table booking.** Guests choose party size, date and seating area and see only the times that are really free for
+  their party.
+- **Staff portal (`/staff`).** Signed-in staff answer requests, add phone bookings and walk-ins, and seat or move
+  guests on a live table plan with a time slider.
+- **Menu editor.** Staff edit dishes, prices, order and photos, or hide a dish. Saving publishes the change to the
+  website automatically, usually within a minute.
+- **Pages.** A scroll-driven home page (canvas film, GSAP animations), a full menu with sticky section tabs, and an
+  about page.
+- **Accessibility.** Every control works with the keyboard, pop-ups follow the ARIA dialog and listbox patterns, and
+  reduced-motion visitors get a still, fully readable page.
+
+![Staff portal: bookings and menu editor](docs/screenshots/staff-portal.jpg)
 
 ## Tech stack
 
-| Area          | Technology                                                                                          |
-| ------------- | --------------------------------------------------------------------------------------------------- |
-| Framework     | Next.js 16 (App Router), React 19, TypeScript (strict)                                              |
-| Data fetching | TanStack React Query (queries, mutations, background refresh) with native `fetch`                   |
-| Validation    | Zod: every API response, the booking form and the staff forms                                       |
-| Animation     | GSAP with ScrollTrigger, Draggable and Inertia                                                      |
-| Backend       | Google Apps Script web app over a Google Sheet (`google-apps-script/`); menu photos in Google Drive |
-| Hosting       | Static export (`output: 'export'`) deployed on Netlify from GitHub                                  |
-| Code quality  | ESLint (Next.js core web vitals and TypeScript rules), Prettier                                     |
+| Area       | Technology                                                                 |
+| ---------- | -------------------------------------------------------------------------- |
+| Frontend   | Next.js 16 (App Router, static export), React 19, TypeScript (strict)      |
+| Data       | TanStack Query (queries, mutations, background refresh), native `fetch`    |
+| Validation | Zod for every API response and form                                       |
+| Animation  | GSAP with ScrollTrigger, Draggable and Inertia                             |
+| Backend    | Google Apps Script web app over Google Sheets; menu photos in Google Drive |
+| Hosting    | Netlify, deployed from GitHub; menu changes trigger a build hook           |
+| Tooling    | ESLint, Prettier                                                           |
 
 ## How it works
 
 ```
-Browser (Next.js static pages)
-  ├── React Query ── fetch (POST, JSON) ──► Google Apps Script web app ──► Google Sheet
-  │                                          (Bookings, Tables, Hours, Settings, Staff, Menu tabs)
-  └── Zod checks every answer before the UI uses it
-
-Build (Netlify)
-  └── sync-menu ── Menu tab + photos from Drive ──► Zod ──► menu data + static photos ──► next build
+Browser (static Next.js pages)
+  └── TanStack Query ── fetch ──► Apps Script web app ──► Google Sheet (bookings, tables, hours, staff, menu)
+                                                      └─► Google Drive (dish photos)
+Netlify build
+  └── sync-menu: Menu tab + photos ──► Zod ──► typed menu data + static images ──► next build
 ```
 
-- **Static first.** Every page is pre-rendered to HTML at build time, so the site is fast and needs no server. Only
-  the booking form and the staff portal are client components.
-- **Booking API.** One module, `src/lib/booking-api.ts`, talks to the backend. Each request is a single POST sent as
-  plain text, so the browser makes a simple request with no CORS preflight. Zod schemas describe every response.
-- **Availability.** The form asks for free times only when the visitor scrolls near it. Answers are cached for 30
-  seconds per date and party size, and quick changes are debounced into one request.
-- **Business rules live in the backend.** A booking holds the smallest free table that fits for 90 minutes (5 or more
-  guests: 120). It has statuses with allowed transitions (waiting, confirmed, seated, finished, no-show, declined,
-  cancelled) and email notifications to the guest and the restaurant. All of these are enforced in `Code.gs` under a
-  script lock, so two guests can never take the same table.
-- **Staff authentication.** Passwords stay in the Sheet. A successful sign-in returns an HMAC-signed token that expires
-  after 12 hours. Every staff action is verified on the server, and repeated failed sign-ins are slowed down.
-- **Menu managed in the Sheet.** The dishes (name, description, price, category, order, home-page placement) live in
-  a Menu tab and their photos in a Google Drive folder, so the restaurant edits the menu without touching code. Before
-  every build, `scripts/sync-menu.mjs` downloads both, validates every row with Zod and writes typed data and
-  static photo files; a broken row stops the build instead of publishing a broken menu. Publishing (from the staff
-  portal or the Sheet) triggers a Netlify build hook, so changes go live in about two minutes.
-- **Times are the restaurant's.** Dates and times are handled in Europe/London whatever the visitor's own time zone.
+- **Static first.** Every page is pre-rendered, so the site is fast and needs no server. Only the booking form and
+  the staff portal fetch data in the browser.
+- **One API client.** `src/lib/booking-api.ts` sends every request as a single POST and checks each answer with Zod
+  before the UI uses it. Read-only requests are retried once if the network drops; changes are never sent twice.
+- **Rules live in the backend.** Table assignment, booking statuses, opening hours and emails are enforced in
+  `google-apps-script/Code.gs` under a lock, so two guests can never take the same table.
+- **Staff sign-in.** Passwords stay in the Sheet; a sign-in returns an HMAC-signed token that expires after 12 hours,
+  and every staff action is verified on the server.
+- **Menu publishing.** The build downloads the menu, validates every row and stops on a broken one instead of
+  publishing it. Unchanged photos are copied from the live site, so only new ones are downloaded.
+
+![Menu page](docs/screenshots/menu.jpg)
 
 ## Project structure
 
 ```
 src/
-  app/                    routes (App Router): /, /menu, /about, /staff, 404, robots.txt, sitemap.xml
-    layout.tsx            root layout, fonts, global styles
-    providers.tsx         React Query client
-  components/
-    home/                 home page sections: Hero, Manifesto, Day, Marquee, Menu, Pan, People, Reserve, Footer
-    menu/, about/, site/  inner pages and their shared header and footer
+  app/              routes: /, /menu, /about, /staff, 404, sitemap, robots
+  components/       page sections (home, menu, about) and shared header and footer
   features/
-    booking/              booking form: React Query, custom dropdown and calendar, Zod contact checks
-    staff/                staff portal: sign-in, day view, table plan, booking dialog, menu editor
-    home/                 scroll animations (GSAP)
-    menu/                 menu page section tabs
-  lib/
-    booking-api.ts        API client and Zod schemas
-    dates.ts              date and time helpers (Europe/London)
-  data/menu.ts            the menu: categories, home-page groups, the dishes (checked with Zod)
-  data/menu.snapshot.json the menu used when the Sheet is not available (local development)
-scripts/sync-menu.mjs     build step: fetches the Menu tab and photos, validates them, writes the menu data
-  styles/                 design system CSS (base, global, page styles, self-hosted fonts)
-public/                   photos, film frames, fonts, Netlify headers
-google-apps-script/
-  Code.gs                 backend: availability, bookings, staff sign-in and actions, emails
-  Menu.gs                 menu: the Menu tab, the photos folder, the read API for the build, the publish button
-  MenuAdmin.gs            menu editing for signed-in staff: list, save, photo upload, publish
-  local-test/             runs Code.gs locally against in-memory sheets, for development and tests
+    booking/        booking form
+    staff/          staff portal: sign-in, day view, table plan, booking dialog, menu editor
+    home/, menu/    scroll animations and menu tabs
+  lib/              API client with Zod schemas, date helpers
+  data/             menu data and the snapshot used for local work
+  styles/           design system CSS and self-hosted fonts
+scripts/            build step that syncs the menu from the Sheet
+google-apps-script/ backend (Code.gs, Menu.gs, MenuAdmin.gs) and a local test server
+public/             images, film frames, fonts
 ```
 
 ## Running locally
@@ -100,15 +80,14 @@ Requires Node.js 20.9 or newer.
 
 ```bash
 npm install
-npm run mock-api     # local booking backend on :8792 (test sign-in: staff / local-test-pass)
-npm run dev          # http://localhost:3000
+npm run mock-api   # local backend on :8792 (sign-in: staff / local-test-pass)
+npm run dev        # http://localhost:3000
 ```
 
-Environment variables (see `.env.example`):
+Set `NEXT_PUBLIC_BOOKING_API_URL` in `.env.local` (see `.env.example`). Left empty, the booking form runs in preview
+mode and the committed menu snapshot is used. Other scripts: `npm run build`, `npm run lint`, `npm run typecheck`.
 
-| Variable                      | Purpose                                                                                                                                           |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_BOOKING_API_URL` | Booking backend address. It is also where the build reads the menu from. When empty, the form runs in preview mode and the menu snapshot is used. |
-| `NEXT_PUBLIC_SITE_URL`        | Public site address for canonical links, social previews and the sitemap (set automatically on Netlify).                                          |
+## Author
 
-Scripts: `npm run build` (static export to `out/`), `npm run lint`, `npm run typecheck`, `npm run format`.
+Built by **Victor Tar** · [LinkedIn](https://www.linkedin.com/in/viktor-tar/) ·
+[GitHub](https://github.com/viktor-tar). Developed with AI-assisted tooling (Claude Code).
