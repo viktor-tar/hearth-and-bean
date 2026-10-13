@@ -22,23 +22,26 @@ in Bath.
 
 ## Tech stack
 
-| Area | Technology |
-| --- | --- |
-| Framework | Next.js 16 (App Router), React 19, TypeScript (strict) |
-| Data fetching | TanStack React Query (queries, mutations, background refresh) with native `fetch` |
-| Validation | Zod: every API response, the booking form and the staff forms |
-| Animation | GSAP with ScrollTrigger, Draggable and Inertia |
-| Backend | Google Apps Script web app over a Google Sheet (`google-apps-script/Code.gs`) |
-| Hosting | Static export (`output: 'export'`) deployed on Netlify from GitHub |
-| Code quality | ESLint (Next.js core web vitals and TypeScript rules), Prettier |
+| Area          | Technology                                                                                          |
+| ------------- | --------------------------------------------------------------------------------------------------- |
+| Framework     | Next.js 16 (App Router), React 19, TypeScript (strict)                                              |
+| Data fetching | TanStack React Query (queries, mutations, background refresh) with native `fetch`                   |
+| Validation    | Zod: every API response, the booking form and the staff forms                                       |
+| Animation     | GSAP with ScrollTrigger, Draggable and Inertia                                                      |
+| Backend       | Google Apps Script web app over a Google Sheet (`google-apps-script/`); menu photos in Google Drive |
+| Hosting       | Static export (`output: 'export'`) deployed on Netlify from GitHub                                  |
+| Code quality  | ESLint (Next.js core web vitals and TypeScript rules), Prettier                                     |
 
 ## How it works
 
 ```
 Browser (Next.js static pages)
   ├── React Query ── fetch (POST, JSON) ──► Google Apps Script web app ──► Google Sheet
-  │                                          (Bookings, Tables, Hours, Settings, Staff tabs)
+  │                                          (Bookings, Tables, Hours, Settings, Staff, Menu tabs)
   └── Zod checks every answer before the UI uses it
+
+Build (Netlify)
+  └── sync-menu ── Menu tab + photos from Drive ──► Zod ──► menu data + static photos ──► next build
 ```
 
 - **Static first.** Every page is pre-rendered to HTML at build time, so the site is fast and needs no server. Only
@@ -53,8 +56,11 @@ Browser (Next.js static pages)
   script lock, so two guests can never take the same table.
 - **Staff authentication.** Passwords stay in the Sheet. A successful sign-in returns an HMAC-signed token that expires
   after 12 hours. Every staff action is verified on the server, and repeated failed sign-ins are slowed down.
-- **Content as data.** All 50 dishes (name, description, price, photo, category, home-page placement) live in one typed
-  file, `src/data/menu.ts`, which feeds both the home page rail and the full menu.
+- **Menu managed in the Sheet.** The dishes (name, description, price, category, order, home-page placement) live in
+  a Menu tab and their photos in a Google Drive folder, so the restaurant edits the menu without touching code. Before
+  every build, `scripts/sync-menu.mjs` downloads both, validates every row with Zod and writes typed data and
+  static photo files; a broken row stops the build instead of publishing a broken menu. A "Publish menu" item in the Sheet
+  triggers a Netlify build hook, so changes go live in about a minute.
 - **Times are the restaurant's.** Dates and times are handled in Europe/London whatever the visitor's own time zone.
 
 ## Project structure
@@ -75,11 +81,14 @@ src/
   lib/
     booking-api.ts        API client and Zod schemas
     dates.ts              date and time helpers (Europe/London)
-  data/menu.ts            the menu
+  data/menu.ts            the menu: categories, home-page groups, the dishes (checked with Zod)
+  data/menu.snapshot.json the menu used when the Sheet is not available (local development)
+scripts/sync-menu.mjs     build step: fetches the Menu tab and photos, validates them, writes the menu data
   styles/                 design system CSS (base, global, page styles, self-hosted fonts)
 public/                   photos, film frames, fonts, Netlify headers
 google-apps-script/
   Code.gs                 backend: availability, bookings, staff sign-in and actions, emails
+  Menu.gs                 menu: the Menu tab, the photos folder, the read API for the build, the publish button
   local-test/             runs Code.gs locally against in-memory sheets, for development and tests
 ```
 
@@ -95,9 +104,9 @@ npm run dev          # http://localhost:3000
 
 Environment variables (see `.env.example`):
 
-| Variable | Purpose |
-| --- | --- |
-| `NEXT_PUBLIC_BOOKING_API_URL` | Booking backend address. When empty, the form runs in preview mode and sends nothing. |
-| `NEXT_PUBLIC_SITE_URL` | Public site address for canonical links, social previews and the sitemap (set automatically on Netlify). |
+| Variable                      | Purpose                                                                                                                                           |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_BOOKING_API_URL` | Booking backend address. It is also where the build reads the menu from. When empty, the form runs in preview mode and the menu snapshot is used. |
+| `NEXT_PUBLIC_SITE_URL`        | Public site address for canonical links, social previews and the sitemap (set automatically on Netlify).                                          |
 
 Scripts: `npm run build` (static export to `out/`), `npm run lint`, `npm run typecheck`, `npm run format`.

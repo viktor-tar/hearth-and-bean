@@ -4,12 +4,15 @@
   "private": true,
   "description": "Hearth & Bean restaurant website (Next.js), booking form and staff portal on Google Apps Script",
   "scripts": {
+    "predev": "node scripts/sync-menu.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/sync-menu.mjs",
     "build": "next build",
     "start": "npx serve@14 out",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
+    "sync-menu": "node scripts/sync-menu.mjs",
     "mock-api": "node google-apps-script/local-test/server.js 8792"
   },
   "engines": {

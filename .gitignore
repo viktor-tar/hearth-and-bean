@@ -7,3 +7,7 @@ out/
 next-env.d.ts
 .DS_Store
 .netlify/
+
+# generated before each build by scripts/sync-menu.mjs
+src/data/menu.json
+public/images/menu/

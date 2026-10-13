@@ -2,7 +2,7 @@
 const http = require('http'); const { makeEnv } = require('./gas');
 const port = +(process.argv[2] || 8792);
 let env;
-function reset(now) { env = makeEnv({ now: now || null }); env.sandbox.setup(); env.state.sheets.Staff.rows[1][1] = 'local-test-pass'; }
+function reset(now) { env = makeEnv({ now: now || null }); env.sandbox.setup(); env.state.sheets.Staff.rows[1][1] = 'local-test-pass'; env.sandbox.setupMenu(); }
 reset(process.argv[3]);
 http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');

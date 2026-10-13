@@ -1,0 +1,469 @@
+{
+  "source": "snapshot",
+  "dishes": [
+    {
+      "name": "Rustic Tomato Soup",
+      "description": "Served with a sourdough grilled cheese.",
+      "price": "£9.95",
+      "image": "/images/dishes/tomato-soup-with-grilled-cheese.avif",
+      "category": "artisanal-snacks-and-boards",
+      "menuOrder": 1,
+      "home": {
+        "group": "From the oven",
+        "order": 6
+      }
+    },
+    {
+      "name": "Hearth & Bean Cheese Board",
+      "description": "Local cheeses, nuts, and honey.",
+      "price": "£16.50",
+      "image": "/images/dishes/cheese-board-with-nuts-and.avif",
+      "category": "artisanal-snacks-and-boards",
+      "menuOrder": 2,
+      "home": {
+        "group": "From the oven",
+        "order": 8
+      }
+    },
+    {
+      "name": "Smoked Salmon Toast",
+      "description": "Caper cream cheese, dill, pickled onion.",
+      "price": "£12.50",
+      "image": "/images/dishes/smoked-salmon-toast.avif",
+      "category": "artisanal-snacks-and-boards",
+      "menuOrder": 3,
+      "home": {
+        "group": "From the oven",
+        "order": 7
+      }
+    },
+    {
+      "name": "Baked Camembert",
+      "description": "With rosemary and honey-drizzled toast.",
+      "price": "£12.95",
+      "image": "/images/dishes/baked-camembert-with-toast.avif",
+      "category": "artisanal-snacks-and-boards",
+      "menuOrder": 4,
+      "home": {
+        "group": "From the oven",
+        "order": 5
+      }
+    },
+    {
+      "name": "Braised Lamb Shank",
+      "description": "Six hours in red wine and rosemary, on creamy mash.",
+      "price": "£22.50",
+      "image": "/images/dishes/braised-lamb-shank-on-mash.jpg",
+      "category": "hearty-mains-and-sandwiches",
+      "menuOrder": 1,
+      "home": {
+        "group": "Kitchen",
+        "order": 11
+      }
+    },
+    {
+      "name": "Beef & Ale Pie",
+      "description": "Slow-cooked in dark ale, shortcrust lid, mash and peas.",
+      "price": "£18.50",
+      "image": "/images/dishes/beef-and-ale-pie-served.jpg",
+      "category": "hearty-mains-and-sandwiches",
+      "menuOrder": 2,
+      "home": {
+        "group": "Kitchen",
+        "order": 9
+      }
+    },
+    {
+      "name": "Fish Pie",
+      "description": "Haddock, salmon and prawns under cheddar mash.",
+      "price": "£17.95",
+      "image": "/images/dishes/classic-fish-pie-with-mash.jpg",
+      "category": "hearty-mains-and-sandwiches",
+      "menuOrder": 3,
+      "home": {
+        "group": "Kitchen",
+        "order": 10
+      }
+    },
+    {
+      "name": "Wood-Roasted Half Chicken",
+      "description": "Thyme and garlic, roast potatoes, charred lemon.",
+      "price": "£19.50",
+      "image": "/images/dishes/wood-roasted-half-chicken-served.jpg",
+      "category": "hearty-mains-and-sandwiches",
+      "menuOrder": 4,
+      "home": {
+        "group": "Kitchen",
+        "order": 12
+      }
+    },
+    {
+      "name": "Sausages & Mash",
+      "description": "Cumberland sausages, mash and onion gravy.",
+      "price": "£15.50",
+      "image": "/images/dishes/sausages-and-mash-in-bowl.jpg",
+      "category": "hearty-mains-and-sandwiches",
+      "menuOrder": 5
+    },
+    {
+      "name": "Sunday Roast Sirloin",
+      "description": "Sundays only. Sirloin, Yorkshire pudding and all the trimmings.",
+      "price": "£23.50",
+      "image": "/images/dishes/sunday-roast-sirloin-beef-meal.jpg",
+      "category": "hearty-mains-and-sandwiches",
+      "menuOrder": 6
+    },
+    {
+      "name": "The Hearth Club",
+      "description": "Turkey, bacon, avocado on toasted sourdough.",
+      "price": "£12.50",
+      "image": "/images/dishes/hearth-club-sandwich-on-table.avif",
+      "category": "hearty-mains-and-sandwiches",
+      "menuOrder": 7
+    },
+    {
+      "name": "Prosciutto & Fig Panini",
+      "description": "With arugula and balsamic glaze.",
+      "price": "£10.50",
+      "image": "/images/dishes/prosciutto-and-fig-panini.avif",
+      "category": "hearty-mains-and-sandwiches",
+      "menuOrder": 8
+    },
+    {
+      "name": "Avocado & Hearth Seed Toast",
+      "description": "Topped with chili flakes.",
+      "price": "£10.50",
+      "image": "/images/dishes/avocado-seed-toast-with-flakes.avif",
+      "category": "hearty-mains-and-sandwiches",
+      "menuOrder": 9
+    },
+    {
+      "name": "Roasted Root Vegetable Salad",
+      "description": "Honey-balsamic dressing.",
+      "price": "£11.75",
+      "image": "/images/dishes/roasted-root-vegetable-salad.avif",
+      "category": "hearty-mains-and-sandwiches",
+      "menuOrder": 10
+    },
+    {
+      "name": "Warm Grain Bowl",
+      "description": "Quinoa, kale, roasted squash, and tahini.",
+      "price": "£12.25",
+      "image": "/images/dishes/warm-grain-bowl-with-tahini.avif",
+      "category": "hearty-mains-and-sandwiches",
+      "menuOrder": 11
+    },
+    {
+      "name": "Hearth-Baked Shakshuka",
+      "description": "Poached eggs in spiced tomato sauce.",
+      "price": "£12.95",
+      "image": "/images/dishes/hearth-baked-shakshuka-in-tomato.avif",
+      "category": "hearty-mains-and-sandwiches",
+      "menuOrder": 12
+    },
+    {
+      "name": "Ham & Gruyère Melt",
+      "description": "With Dijon mustard on brioche.",
+      "price": "£9.95",
+      "image": "/images/dishes/ham-and-gruy-re-melt.avif",
+      "category": "hearty-mains-and-sandwiches",
+      "menuOrder": 13
+    },
+    {
+      "name": "The Signature Sourdough",
+      "description": "Large slice with cultured butter.",
+      "price": "£4.25",
+      "image": "/images/dishes/sourdough-slice-with-cultured-bu.avif",
+      "category": "hearth-baked-breads-and-pastries",
+      "menuOrder": 1,
+      "home": {
+        "group": "Coffee and tea",
+        "order": 4
+      }
+    },
+    {
+      "name": "Flaky Butter Croissant",
+      "description": "Golden and layered.",
+      "price": "£3.25",
+      "image": "/images/dishes/butter-croissant-on-table.avif",
+      "category": "hearth-baked-breads-and-pastries",
+      "menuOrder": 2
+    },
+    {
+      "name": "Pain au Chocolat",
+      "description": "Dark chocolate center.",
+      "price": "£3.60",
+      "image": "/images/dishes/pain-au-chocolat-on-table.avif",
+      "category": "hearth-baked-breads-and-pastries",
+      "menuOrder": 3
+    },
+    {
+      "name": "Almond Frangipane Croissant",
+      "description": "Topped with toasted almonds.",
+      "price": "£4.20",
+      "image": "/images/dishes/almond-frangipane-croissant-topp.avif",
+      "category": "hearth-baked-breads-and-pastries",
+      "menuOrder": 4,
+      "home": {
+        "group": "Coffee and tea",
+        "order": 3
+      }
+    },
+    {
+      "name": "Hearth-Charred Bagel",
+      "description": "Choice of cream cheese or pesto.",
+      "price": "£4.50",
+      "image": "/images/dishes/hearth-charred-bagel-with-spread.avif",
+      "category": "hearth-baked-breads-and-pastries",
+      "menuOrder": 5
+    },
+    {
+      "name": "Cinnamon Swirl Brioche",
+      "description": "Warm and sticky.",
+      "price": "£4.50",
+      "image": "/images/dishes/cinnamon-swirl-brioche-served.avif",
+      "category": "hearth-baked-breads-and-pastries",
+      "menuOrder": 6
+    },
+    {
+      "name": "Blueberry & Rye Muffin",
+      "description": "Hearty and sweet.",
+      "price": "£3.75",
+      "image": "/images/dishes/blueberry-and-rye-muffin.avif",
+      "category": "hearth-baked-breads-and-pastries",
+      "menuOrder": 7
+    },
+    {
+      "name": "Lemon Poppyseed Scone",
+      "description": "With lemon glaze.",
+      "price": "£3.75",
+      "image": "/images/dishes/lemon-poppyseed-scone-with-glaze.avif",
+      "category": "hearth-baked-breads-and-pastries",
+      "menuOrder": 8
+    },
+    {
+      "name": "Seasonal Fruit Galette",
+      "description": "Thin, flaky crust with fresh fruit.",
+      "price": "£5.50",
+      "image": "/images/dishes/seasonal-fruit-galette-on-table.avif",
+      "category": "hearth-baked-breads-and-pastries",
+      "menuOrder": 9,
+      "home": {
+        "group": "After dark",
+        "order": 15
+      }
+    },
+    {
+      "name": "Smoked Sea Salt Brownie",
+      "description": "Dense and fudgy.",
+      "price": "£3.95",
+      "image": "/images/dishes/smoked-sea-salt-brownie.avif",
+      "category": "hearth-baked-breads-and-pastries",
+      "menuOrder": 10,
+      "home": {
+        "group": "After dark",
+        "order": 16
+      }
+    },
+    {
+      "name": "Granola & Greek Yogurt",
+      "description": "With berry compote and honey.",
+      "price": "£7.50",
+      "image": "/images/dishes/granola-and-yogurt-with-honey.avif",
+      "category": "hearth-baked-breads-and-pastries",
+      "menuOrder": 11
+    },
+    {
+      "name": "Sticky Toffee Pudding",
+      "description": "Date sponge, toffee sauce, vanilla ice cream.",
+      "price": "£7.95",
+      "image": "/images/dishes/sticky-toffee-pudding-dessert.jpg",
+      "category": "hearth-baked-breads-and-pastries",
+      "menuOrder": 12,
+      "home": {
+        "group": "After dark",
+        "order": 13
+      }
+    },
+    {
+      "name": "Apple & Blackberry Crumble",
+      "description": "Baked to order, with vanilla custard.",
+      "price": "£7.50",
+      "image": "/images/dishes/apple-and-blackberry-crumble-des.jpg",
+      "category": "hearth-baked-breads-and-pastries",
+      "menuOrder": 13,
+      "home": {
+        "group": "After dark",
+        "order": 14
+      }
+    },
+    {
+      "name": "Hearth House Blend",
+      "description": "Our signature medium roast.",
+      "price": "£3.50",
+      "image": "/images/dishes/hearth-house-blend-coffee.avif",
+      "category": "signature-coffee-and-espresso",
+      "menuOrder": 1
+    },
+    {
+      "name": "Bean & Copper Latte",
+      "description": "Espresso with spiced copper-syrup and steamed milk.",
+      "price": "£4.75",
+      "image": "/images/dishes/bean-and-copper-latte-on.avif",
+      "category": "signature-coffee-and-espresso",
+      "menuOrder": 2
+    },
+    {
+      "name": "Smoked Maple Cappuccino",
+      "description": "Topped with smoked maple flakes.",
+      "price": "£4.75",
+      "image": "/images/dishes/smoked-maple-cappuccino-served.avif",
+      "category": "signature-coffee-and-espresso",
+      "menuOrder": 3
+    },
+    {
+      "name": "The Hearth Fire Mocha",
+      "description": "Dark chocolate with a hint of cayenne.",
+      "price": "£4.95",
+      "image": "/images/dishes/hearth-fire-mocha-dark-chocolate.avif",
+      "category": "signature-coffee-and-espresso",
+      "menuOrder": 4
+    },
+    {
+      "name": "Single-Origin Pour Over",
+      "description": "Rotating seasonal beans.",
+      "price": "£5.25",
+      "image": "/images/dishes/single-origin-pour-over-coffee.avif",
+      "category": "signature-coffee-and-espresso",
+      "menuOrder": 5,
+      "home": {
+        "group": "Coffee and tea",
+        "order": 2
+      }
+    },
+    {
+      "name": "Double Espresso",
+      "description": "Bold and bright.",
+      "price": "£3.20",
+      "image": "/images/dishes/double-espresso-served.avif",
+      "category": "signature-coffee-and-espresso",
+      "menuOrder": 6
+    },
+    {
+      "name": "Macchiato",
+      "description": "Marked with foam.",
+      "price": "£3.40",
+      "image": "/images/dishes/macchiato-served-on-wooden-table.avif",
+      "category": "signature-coffee-and-espresso",
+      "menuOrder": 7
+    },
+    {
+      "name": "Cortado",
+      "description": "Equal parts espresso and steamed milk.",
+      "price": "£3.80",
+      "image": "/images/dishes/cortado-on-wooden-table.avif",
+      "category": "signature-coffee-and-espresso",
+      "menuOrder": 8
+    },
+    {
+      "name": "Flat White",
+      "description": "Smooth micro-foam.",
+      "price": "£3.95",
+      "image": "/images/dishes/flat-white-on-wooden-table.avif",
+      "category": "signature-coffee-and-espresso",
+      "menuOrder": 9,
+      "home": {
+        "group": "Coffee and tea",
+        "order": 1
+      }
+    },
+    {
+      "name": "Cold Brew",
+      "description": "Steeped for 18 hours.",
+      "price": "£4.25",
+      "image": "/images/dishes/cold-brew-coffee-served.avif",
+      "category": "signature-coffee-and-espresso",
+      "menuOrder": 10
+    },
+    {
+      "name": "Americano",
+      "description": "Hot or iced.",
+      "price": "£3.60",
+      "image": "/images/dishes/americano-on-wooden-table.avif",
+      "category": "signature-coffee-and-espresso",
+      "menuOrder": 11
+    },
+    {
+      "name": "Affogato",
+      "description": "Espresso over vanilla bean gelato.",
+      "price": "£5.50",
+      "image": "/images/dishes/affogato-served-over-gelato.avif",
+      "category": "signature-coffee-and-espresso",
+      "menuOrder": 12
+    },
+    {
+      "name": "Vanilla Bean Latte",
+      "description": "House-made vanilla bean syrup.",
+      "price": "£4.60",
+      "image": "/images/dishes/vanilla-bean-latte-on-table.avif",
+      "category": "signature-coffee-and-espresso",
+      "menuOrder": 13
+    },
+    {
+      "name": "Hearth Chai Latte",
+      "description": "Spiced black tea with honey.",
+      "price": "£4.50",
+      "image": "/images/dishes/hearth-chai-latte-with-honey.avif",
+      "category": "tea-and-specialty-drinks",
+      "menuOrder": 1
+    },
+    {
+      "name": "Matcha Green Tea Latte",
+      "description": "Ceremonial grade matcha.",
+      "price": "£5.00",
+      "image": "/images/dishes/matcha-green-tea-latte-on.avif",
+      "category": "tea-and-specialty-drinks",
+      "menuOrder": 2
+    },
+    {
+      "name": "London Fog",
+      "description": "Earl Grey with vanilla and steamed milk.",
+      "price": "£4.50",
+      "image": "/images/dishes/london-fog-tea-with-milk.avif",
+      "category": "tea-and-specialty-drinks",
+      "menuOrder": 3
+    },
+    {
+      "name": "Golden Milk Latte",
+      "description": "Turmeric, ginger, and honey.",
+      "price": "£4.75",
+      "image": "/images/dishes/golden-milk-latte-with-ingredients.avif",
+      "category": "tea-and-specialty-drinks",
+      "menuOrder": 4
+    },
+    {
+      "name": "Peppermint Herbal Infusion",
+      "description": "Fresh and calming.",
+      "price": "£3.50",
+      "image": "/images/dishes/peppermint-herbal-infusion.avif",
+      "category": "tea-and-specialty-drinks",
+      "menuOrder": 5
+    },
+    {
+      "name": "Copper Kettle Hot Chocolate",
+      "description": "Melted premium dark chocolate.",
+      "price": "£4.50",
+      "image": "/images/dishes/copper-kettle-hot-chocolate.avif",
+      "category": "tea-and-specialty-drinks",
+      "menuOrder": 6
+    },
+    {
+      "name": "Chai Spiced Apple Cider",
+      "description": "Hot and comforting.",
+      "price": "£4.50",
+      "image": "/images/dishes/chai-spiced-apple-cider.avif",
+      "category": "tea-and-specialty-drinks",
+      "menuOrder": 7
+    }
+  ]
+}

@@ -83,6 +83,9 @@ function onOpen() {
   SpreadsheetApp.getUi().createMenu('Hearth & Bean')
     .addItem('Set up / repair tabs', 'setup')
     .addItem('Send a test email to the restaurant', 'sendTestEmail')
+    .addSeparator()
+    .addItem('Publish menu to the website', 'publishMenu')
+    .addItem('Set up / repair the menu tab and photos', 'setupMenu')
     .addToUi();
 }
 
@@ -162,6 +165,8 @@ function doPost(e) {
 function hbRoute_(req) {
   switch (String(req.action || '')) {
     case 'config': return hbPublicConfig_();
+    case 'menu': return hbMenu_();
+    case 'menuPhoto': return hbMenuPhoto_(req);
     case 'availability': return hbAvailability_(req);
     case 'book': return hbBook_(req);
     case 'login': return hbLogin_(req);
