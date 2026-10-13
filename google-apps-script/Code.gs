@@ -167,6 +167,10 @@ function hbRoute_(req) {
     case 'config': return hbPublicConfig_();
     case 'menu': return hbMenu_();
     case 'menuPhoto': return hbMenuPhoto_(req);
+    case 'menuAdmin': return hbMenuAdmin_(req, hbAuth_(req));
+    case 'menuSave': return hbMenuSave_(req, hbAuth_(req));
+    case 'menuUpload': return hbMenuUpload_(req, hbAuth_(req));
+    case 'menuPublish': return hbMenuPublish_(req, hbAuth_(req));
     case 'availability': return hbAvailability_(req);
     case 'book': return hbBook_(req);
     case 'login': return hbLogin_(req);

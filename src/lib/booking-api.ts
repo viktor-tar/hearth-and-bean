@@ -141,6 +141,46 @@ export type Day = z.infer<typeof daySchema>;
 
 export const bookingResultSchema = z.object({ booking: bookingSchema });
 
+/* ---------------- the menu, as staff edit it ---------------- */
+
+export const menuPhotoSchema = z.object({
+  id: z.string(),
+  name: text,
+  type: text,
+  size: z.number(),
+  updated: z.number(),
+});
+export type MenuPhoto = z.infer<typeof menuPhotoSchema>;
+
+export const menuItemSchema = z.object({
+  row: z.number(),
+  name: text,
+  description: text,
+  price: text,
+  category: text,
+  menuOrder: int,
+  homeGroup: text,
+  homeOrder: int,
+  active: z.boolean(),
+  photoName: text,
+  photo: menuPhotoSchema.nullable(),
+});
+export type MenuItem = z.infer<typeof menuItemSchema>;
+
+export const menuAdminSchema = z.object({
+  categories: z.array(z.string()),
+  homeGroups: z.array(z.string()),
+  items: z.array(menuItemSchema),
+  edited: z.number(),
+  published: z.number(),
+  canPublish: z.boolean(),
+});
+export type MenuAdmin = z.infer<typeof menuAdminSchema>;
+
+export const menuItemResultSchema = z.object({ item: menuItemSchema });
+export const menuPublishSchema = z.object({ published: z.number() });
+export const menuPhotoDataSchema = z.object({ id: z.string(), type: text, data: z.string() });
+
 /* ---------------- the call ---------------- */
 
 const envelopeSchema = z.object({

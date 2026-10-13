@@ -16,7 +16,8 @@ in Bath.
   really free for their party. The sentence above the form rewrites itself as they choose.
 - **Staff portal (`/staff`):** a signed-in tool for running the day. Staff can answer requests, approve, seat,
   finish or cancel bookings, add phone bookings and walk-ins, edit bookings, and move a party to another table on a
-  live floor plan with a time slider.
+  live floor plan with a time slider. A Menu view lets them edit, add and hide dishes, upload new photos (resized in
+  the browser) and publish the menu.
 - **Accessibility and motion:** every control works with the keyboard, the pop-ups follow the ARIA listbox and dialog
   patterns, and visitors who prefer reduced motion get a still, fully readable page.
 
@@ -59,8 +60,8 @@ Build (Netlify)
 - **Menu managed in the Sheet.** The dishes (name, description, price, category, order, home-page placement) live in
   a Menu tab and their photos in a Google Drive folder, so the restaurant edits the menu without touching code. Before
   every build, `scripts/sync-menu.mjs` downloads both, validates every row with Zod and writes typed data and
-  static photo files; a broken row stops the build instead of publishing a broken menu. A "Publish menu" item in the Sheet
-  triggers a Netlify build hook, so changes go live in about a minute.
+  static photo files; a broken row stops the build instead of publishing a broken menu. Publishing (from the staff
+  portal or the Sheet) triggers a Netlify build hook, so changes go live in about two minutes.
 - **Times are the restaurant's.** Dates and times are handled in Europe/London whatever the visitor's own time zone.
 
 ## Project structure
@@ -75,7 +76,7 @@ src/
     menu/, about/, site/  inner pages and their shared header and footer
   features/
     booking/              booking form: React Query, custom dropdown and calendar, Zod contact checks
-    staff/                staff portal: sign-in, day view, table plan, booking dialog
+    staff/                staff portal: sign-in, day view, table plan, booking dialog, menu editor
     home/                 scroll animations (GSAP)
     menu/                 menu page section tabs
   lib/
@@ -89,6 +90,7 @@ public/                   photos, film frames, fonts, Netlify headers
 google-apps-script/
   Code.gs                 backend: availability, bookings, staff sign-in and actions, emails
   Menu.gs                 menu: the Menu tab, the photos folder, the read API for the build, the publish button
+  MenuAdmin.gs            menu editing for signed-in staff: list, save, photo upload, publish
   local-test/             runs Code.gs locally against in-memory sheets, for development and tests
 ```
 

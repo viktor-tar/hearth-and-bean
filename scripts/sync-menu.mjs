@@ -151,6 +151,11 @@ async function main() {
     ...(it.homeGroup ? { home: { group: it.homeGroup, order: it.homeOrder } } : {}),
   }));
   fs.writeFileSync(OUT_JSON, JSON.stringify({ source: 'sheet', dishes }, null, 2) + '\n');
+  // the staff page shows these copies instead of downloading each photo again: Drive id and version -> file
+  const index = Object.fromEntries(
+    items.map((it) => [`${it.photo.id}:${it.photo.updated}`, files.get(it.photo.id)]),
+  );
+  fs.writeFileSync(path.join(PHOTO_DIR, 'index.json'), JSON.stringify(index) + '\n');
 }
 
 main().catch((e) => fail([e.message]));

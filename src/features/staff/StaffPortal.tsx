@@ -6,6 +6,7 @@
  * the day's bookings, the selected booking and the table plan. Staff can approve, decline, seat, move and edit
  * bookings, and add phone bookings and walk-ins. The password is checked by the sheet, which answers with a
  * signed token that runs out after 12 hours; the token is kept for this browser tab only (sessionStorage).
+ * The Menu view (MenuEditor.tsx) uses the same sign-in to edit the dishes and photos and publish the menu.
  */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -22,6 +23,7 @@ import {
 } from '@/lib/booking-api';
 import { addDays, fromMin, longDate, shortDate, toMin } from '@/lib/dates';
 import { z } from 'zod';
+import MenuEditor, { ViewSwitch, type View } from './MenuEditor';
 
 const STATUS: Record<string, string> = {
   pending: 'Waiting',
@@ -72,6 +74,7 @@ function stamp(t: string) {
 const sessionSchema = z.object({ token: z.string(), name: z.string(), expires: z.number() });
 type Session = z.infer<typeof sessionSchema>;
 const KEY = 'hb_staff';
+const VIEW_KEY = 'hb_staff_view';
 function stored(): Session | null {
   try {
     const s = sessionSchema.safeParse(JSON.parse(sessionStorage.getItem(KEY) || 'null'));
@@ -115,10 +118,24 @@ export default function StaffPortal() {
   const [ready, setReady] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [loginMessage, setLoginMessage] = useState('');
+  const [view, setViewState] = useState<View>('bookings');
+  const setView = useCallback((v: View) => {
+    setViewState(v);
+    try {
+      sessionStorage.setItem(VIEW_KEY, v);
+    } catch {
+      /* private mode: the choice lasts for this page only */
+    }
+  }, []);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- the session lives in sessionStorage, read after hydration
     setSession(stored());
+    try {
+      if (sessionStorage.getItem(VIEW_KEY) === 'menu') setViewState('menu');
+    } catch {
+      /* no storage: start on the bookings */
+    }
     setReady(true);
   }, []);
 
@@ -139,7 +156,11 @@ export default function StaffPortal() {
         }}
       />
     );
-  return <Book key={session.token} session={session} signOut={signOut} />;
+  if (view === 'menu')
+    return (
+      <MenuEditor key={session.token} session={session} signOut={signOut} view={view} setView={setView} />
+    );
+  return <Book key={session.token} session={session} signOut={signOut} view={view} setView={setView} />;
 }
 
 /* ---------------- sign in ---------------- */
@@ -251,7 +272,17 @@ interface FormOpen {
   preset?: { table?: string; time?: string };
 }
 
-function Book({ session, signOut }: { session: Session; signOut: (m: string) => void }) {
+function Book({
+  session,
+  signOut,
+  view,
+  setView,
+}: {
+  session: Session;
+  signOut: (m: string) => void;
+  view: View;
+  setView: (v: View) => void;
+}) {
   const qc = useQueryClient();
   const root = useRef<HTMLDivElement>(null);
   const [date, setDate] = useState('');
@@ -414,6 +445,7 @@ function Book({ session, signOut }: { session: Session; signOut: (m: string) => 
         <div className="staff__serif staff__brand">
           Hearth &amp; Bean<small>Bookings</small>
         </div>
+        <ViewSwitch view={view} setView={setView} />
         <div className="staff__dates">
           <Btn
             text="‹"

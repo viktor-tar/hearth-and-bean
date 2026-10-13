@@ -170,5 +170,6 @@ function publishMenu() {
   }
   var res = UrlFetchApp.fetch(hook, { method: 'post', muteHttpExceptions: true });
   if (res.getResponseCode() >= 300) { ui.alert('Netlify did not accept the request (' + res.getResponseCode() + '). Try again in a minute.'); return; }
+  PropertiesService.getScriptProperties().setProperty('HB_MENU_PUBLISHED', String(Date.now()));
   SpreadsheetApp.getActiveSpreadsheet().toast('The website is being rebuilt with the new menu. It is live in about a minute.', 'Menu published', 8);
 }
