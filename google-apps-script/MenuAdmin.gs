@@ -83,16 +83,39 @@ function hbMenuSave_(req, who) {
         throw hbErr_('duplicate', 'There is already a dish called "' + r.name + '".');
     });
     var rowNo = target ? target._row : Math.max(1, sh.getLastRow()) + 1;
+    // the dish takes the asked place in its section and the section is numbered 1, 2, 3... again, so no two dishes
+    // share a number (a dish that moved to another section also closes the gap it left)
+    var order = hbMenuPlace_(rows, target, rowNo, f.category, f['menu order']);
+    f['menu order'] = order[rowNo];
     var values = head.map(function (h) {
       if (h in f) return hbCell_(f[h]);
       if (h === 'photo') return target ? hbCell_(target.photo || '') : '';
       return target && h in target ? hbCell_(target[h]) : '';
     });
     sh.getRange(rowNo, 1, 1, head.length).setNumberFormat('@').setValues([values]);
+    var col = head.indexOf('menu order') + 1, last = sh.getLastRow();
+    if (col && last > 1) {
+      var cells = sh.getRange(2, col, last - 1, 1).getDisplayValues();
+      Object.keys(order).forEach(function (r) { if (r - 2 < cells.length) cells[r - 2][0] = String(order[r]); });
+      sh.getRange(2, col, last - 1, 1).setNumberFormat('@').setValues(cells);
+    }
     hbMenuTouched_();
     saved = hbMenuItem_(hbRows_(HB_MENU_TAB).filter(function (r) { return r._row === rowNo; })[0], hbMenuPhotos_());
   } finally { lock.releaseLock(); }
   return { item: saved };
+}
+
+/** New positions (row -> number) for the dish's section after placing it at "wanted", and for the section it left. */
+function hbMenuPlace_(rows, target, rowNo, category, wanted) {
+  var byOrder = function (a, b) { return hbInt_(a['menu order'], 0) - hbInt_(b['menu order'], 0) || a._row - b._row; };
+  var order = {};
+  var section = rows.filter(function (r) { return r !== target && r.name && r.category === category; }).sort(byOrder);
+  section.splice(Math.max(0, Math.min(section.length, wanted - 1)), 0, { _row: rowNo });
+  section.forEach(function (r, i) { order[r._row] = i + 1; });
+  if (target && target.category !== category)
+    rows.filter(function (r) { return r !== target && r.name && r.category === target.category; }).sort(byOrder)
+      .forEach(function (r, i) { order[r._row] = i + 1; });
+  return order;
 }
 
 /** A new photo for a dish: saved into the photos folder under a fresh name, then written into the dish's row. */
@@ -125,18 +148,24 @@ function hbMenuHook_() {
   return /^https:\/\/api\.netlify\.com\/build_hooks\/[A-Za-z0-9]+$/.test(hook) ? hook : '';
 }
 
-/** Asks Netlify to rebuild the website with the menu as it is now. At most once a minute. */
+/**
+ * Asks Netlify to rebuild the website with the menu as it is now. At most once a minute: a request inside that minute
+ * is answered with "queued" and the number of seconds after which the page should ask again, so a change saved while
+ * the site is being rebuilt still goes live in the next build.
+ */
 function hbMenuPublish_(req, who) {
   var hook = hbMenuHook_();
   if (!hook) throw hbErr_('no_hook', 'Publishing is not set up yet: the Settings tab needs "menuBuildHook".');
-  var cache = CacheService.getScriptCache();
-  if (cache.get('hb_menu_publish')) throw hbErr_('too_soon', 'The website is already being rebuilt. Please wait a minute.');
+  var cache = CacheService.getScriptCache(), props = PropertiesService.getScriptProperties();
+  var last = hbInt_(cache.get('hb_menu_publish'), 0), wait = 60000 - (Date.now() - last);
+  if (last && wait > 0)
+    return { published: hbInt_(props.getProperty('HB_MENU_PUBLISHED'), 0), queued: true, retryIn: Math.ceil(wait / 1000) };
   var res = UrlFetchApp.fetch(hook, { method: 'post', muteHttpExceptions: true });
   if (res.getResponseCode() >= 300) throw hbErr_('publish_failed', 'Netlify did not accept the request. Please try again in a minute.');
-  cache.put('hb_menu_publish', '1', 60);
   var now = Date.now();
-  PropertiesService.getScriptProperties().setProperty('HB_MENU_PUBLISHED', String(now));
-  return { published: now };
+  cache.put('hb_menu_publish', String(now), 60);
+  props.setProperty('HB_MENU_PUBLISHED', String(now));
+  return { published: now, queued: false, retryIn: 0 };
 }
 
 /** Hand edits to the Menu tab also count as changes waiting to be published. */

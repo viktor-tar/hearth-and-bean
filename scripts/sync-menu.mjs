@@ -16,6 +16,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT_JSON = path.join(root, 'src/data/menu.json');
 const SNAPSHOT = path.join(root, 'src/data/menu.snapshot.json');
 const PHOTO_DIR = path.join(root, 'public/images/menu');
+/* photos already downloaded by an earlier build, kept by Drive id and version (Netlify keeps node_modules between builds) */
+const CACHE_DIR = path.join(root, 'node_modules/.cache/hearth-menu-photos');
 
 /* .env.local is not loaded by Node itself: read the one variable we need from it */
 function env(name) {
@@ -157,25 +159,35 @@ async function main() {
   });
   if (problems.length) fail(problems);
 
-  // photos: one request each, a few at a time
+  // photos: reused from the cache when the same version was downloaded before, otherwise one request each
   fs.rmSync(PHOTO_DIR, { recursive: true, force: true });
   fs.mkdirSync(PHOTO_DIR, { recursive: true });
+  fs.mkdirSync(CACHE_DIR, { recursive: true });
   const files = new Map(); // photo id -> public path
+  const wanted = new Set();
   const queue = [...new Map(items.map((it) => [it.photo.id, it.photo])).values()];
-  let done = 0;
+  let done = 0,
+    reused = 0;
   async function worker() {
     while (queue.length) {
       const p = queue.shift();
-      const r = await call({ action: 'menuPhoto', id: p.id }, photoDataSchema);
       const base = slug(p.name.replace(/\.[a-z0-9]+$/i, '')) || 'dish';
       const file = `${base}-${p.updated.toString(36)}${EXT[p.type]}`;
-      fs.writeFileSync(path.join(PHOTO_DIR, file), Buffer.from(r.data, 'base64'));
+      const cached = path.join(CACHE_DIR, `${p.id}-${p.updated}-${p.size}${EXT[p.type]}`);
+      wanted.add(path.basename(cached));
+      if (fs.existsSync(cached) && fs.statSync(cached).size === p.size) reused++;
+      else {
+        const r = await call({ action: 'menuPhoto', id: p.id }, photoDataSchema);
+        fs.writeFileSync(cached, Buffer.from(r.data, 'base64'));
+        done++;
+      }
+      fs.copyFileSync(cached, path.join(PHOTO_DIR, file));
       files.set(p.id, `/images/menu/${file}`);
-      done++;
     }
   }
   await Promise.all(Array.from({ length: 3 }, worker));
-  console.log(`menu: ${items.length} dishes, ${done} photos`);
+  for (const f of fs.readdirSync(CACHE_DIR)) if (!wanted.has(f)) fs.rmSync(path.join(CACHE_DIR, f));
+  console.log(`menu: ${items.length} dishes, ${done} photos downloaded, ${reused} unchanged`);
 
   const dishes = items.map((it) => ({
     name: it.name,

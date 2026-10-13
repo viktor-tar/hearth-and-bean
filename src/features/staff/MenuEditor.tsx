@@ -11,6 +11,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import {
   ApiError,
+  BOOKING_API,
   callApi,
   menuAdminSchema,
   menuItemResultSchema,
@@ -77,6 +78,9 @@ export default function MenuEditor(props: {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [publishing, setPublishing] = useState(false);
+  const [queuedFor, setQueuedFor] = useState(0); // seconds until a queued publish is sent again
+  const retry = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const again = useRef<() => Promise<void>>(async () => {});
 
   const call: Call = useCallback(
     (action, body, schema) =>
@@ -115,31 +119,70 @@ export default function MenuEditor(props: {
   const stray = shown.filter((i) => !M?.categories.includes(i.category));
   if (stray.length) sections.push({ title: 'Not in a menu section', dishes: stray });
 
-  async function publish() {
+  /* Saving publishes straight away. Netlify rebuilds the site at most once a minute: a save inside that minute is
+     queued by the sheet, and the page sends it again when the minute is over, so every change reaches the website. */
+  const publish = useCallback(async () => {
+    if (retry.current) clearTimeout(retry.current);
+    retry.current = null;
+    setQueuedFor(0);
     setPublishing(true);
-    setError('');
-    setNotice('');
     try {
-      await call('menuPublish', {}, menuPublishSchema);
+      const r = await call('menuPublish', {}, menuPublishSchema);
+      if (r.queued) {
+        setQueuedFor(r.retryIn);
+        retry.current = setTimeout(() => void again.current(), (r.retryIn + 2) * 1000);
+      }
       await qc.refetchQueries({ queryKey: ['staff-menu', session.token] });
     } catch (e) {
       const err = e as ApiError;
       if (err.code === 'auth') signOut(err.message);
-      else setError(err.message);
+      else setError(err.message + ' Use "Publish now" to try again.');
     } finally {
       setPublishing(false);
     }
-  }
+  }, [call, qc, session.token, signOut]);
+  useEffect(() => {
+    again.current = publish;
+  }, [publish]);
 
+  /* a queued publish is not lost when the page is closed or the person signs out: it is sent on the way out */
+  useEffect(() => {
+    const out = () => {
+      if (!retry.current) return;
+      clearTimeout(retry.current);
+      retry.current = null;
+      try {
+        navigator.sendBeacon(BOOKING_API, JSON.stringify({ action: 'menuPublish', token: session.token }));
+      } catch {
+        /* the next save or "Publish now" sends it */
+      }
+    };
+    window.addEventListener('pagehide', out);
+    return () => {
+      window.removeEventListener('pagehide', out);
+      out();
+    };
+  }, [session.token]);
+
+  const live = !!M && !!M.canPublish && missing.length === 0;
+  const recent = !!M && !!M.published && q.dataUpdatedAt - M.published < 3 * 60000;
   const status = !M
     ? ''
-    : unpublished
-      ? 'You have changes that are not on the website yet. Publish to update it.'
-      : M.published && q.dataUpdatedAt - M.published < 3 * 60000
-        ? 'Published ' + when(M.published) + '. The website shows it within about two minutes.'
-        : M.published
-          ? 'The website shows this menu. Last published ' + when(M.published) + '.'
-          : 'The website shows this menu.';
+    : publishing
+      ? 'Sending your changes to the website…'
+      : queuedFor
+        ? 'The website is still updating with your previous change; this one follows in about ' +
+          Math.max(queuedFor, 5) +
+          ' seconds.'
+        : unpublished
+          ? 'Some changes are not on the website yet.'
+          : recent
+            ? 'Updating the website: your changes show there within about two minutes (started ' +
+              when(M.published).replace('today at ', '') +
+              ').'
+            : M.published
+              ? 'The website shows this menu. Last updated ' + when(M.published) + '.'
+              : 'The website shows this menu.';
 
   return (
     <>
@@ -156,21 +199,26 @@ export default function MenuEditor(props: {
         >
           Add dish
         </button>
-        <button
-          type="button"
-          className="staff__btn staff__btn--primary"
-          onClick={publish}
-          disabled={!M || publishing || !M.canPublish || missing.length > 0}
-          title={
-            !M?.canPublish
-              ? 'Publishing is not set up: the Settings tab needs "menuBuildHook".'
-              : missing.length
-                ? 'Every shown dish needs a photo first.'
-                : undefined
-          }
-        >
-          {publishing ? 'Publishing…' : 'Publish menu'}
-        </button>
+        {M && unpublished && !publishing && !queuedFor && (
+          <button
+            type="button"
+            className="staff__btn staff__btn--primary"
+            onClick={() => {
+              setError('');
+              void publish();
+            }}
+            disabled={!live}
+            title={
+              !M.canPublish
+                ? 'Publishing is not set up: the Settings tab needs "menuBuildHook".'
+                : missing.length
+                  ? 'Every shown dish needs a photo first.'
+                  : undefined
+            }
+          >
+            Publish now
+          </button>
+        )}
         <div className="staff__who">
           <span>{session.name}</span>
           <button type="button" className="staff__btn staff__btn--small" onClick={() => signOut('')}>
@@ -197,7 +245,8 @@ export default function MenuEditor(props: {
             {missing.length > 0 && (
               <div className="staff__alert" role="alert">
                 {missing.length === 1 ? '1 dish has' : missing.length + ' dishes have'} no photo:{' '}
-                {missing.map((i) => i.name).join(', ')}. Add a photo or hide the dish before publishing.
+                {missing.map((i) => i.name).join(', ')}. Add a photo or hide the dish: until then, changes are
+                not sent to the website.
               </div>
             )}
             <div className="staff__menu-tools">
@@ -259,11 +308,16 @@ export default function MenuEditor(props: {
             setError(message);
             qc.refetchQueries({ queryKey: ['staff-menu', session.token] });
           }}
-          saved={(it, isNew) => {
+          saved={async (it, isNew) => {
             setEditing(null);
             setError('');
             setNotice(it.name + (isNew ? ' added.' : ' saved.'));
-            qc.refetchQueries({ queryKey: ['staff-menu', session.token] });
+            const fresh = (await qc.fetchQuery({
+              queryKey: ['staff-menu', session.token],
+              queryFn: () => call('menuAdmin', {}, menuAdminSchema),
+              staleTime: 0,
+            })) as MenuAdmin;
+            if (fresh.canPublish && !fresh.items.some((i) => i.active && !i.photo)) void publish();
           }}
         />
       )}
@@ -416,15 +470,23 @@ function DishDialog(props: {
 }) {
   const { M, item } = props;
   const isNew = !item;
-  const nextOrder = (cat: string) =>
-    M.items.filter((i) => i.category === cat).reduce((m, i) => Math.max(m, i.menuOrder), 0) + 1;
+  /* positions are 1..n inside a section: the other dishes there, in menu order, plus this one */
+  const others = (cat: string) =>
+    M.items
+      .filter((i) => i.category === cat && i.row !== item?.row)
+      .sort((a, b) => a.menuOrder - b.menuOrder || a.row - b.row);
+  const nextOrder = (cat: string) => others(cat).length + 1;
+  const placeNow = (it: MenuItem) =>
+    others(it.category).filter(
+      (o) => o.menuOrder < it.menuOrder || (o.menuOrder === it.menuOrder && o.row < it.row),
+    ).length + 1;
   const [f, setF] = useState(() =>
     item
       ? {
           name: item.name,
           price: item.price,
           category: item.category,
-          menuOrder: String(item.menuOrder || 1),
+          menuOrder: String(placeNow(item)),
           description: item.description,
           homeGroup: item.homeGroup,
           homeOrder: item.homeOrder ? String(item.homeOrder) : '',
@@ -619,14 +681,13 @@ function DishDialog(props: {
               )}
               {field(
                 'Position in section',
-                <input
-                  className="staff__input"
-                  type="number"
-                  min={1}
-                  max={999}
-                  value={f.menuOrder}
-                  onChange={set('menuOrder')}
-                />,
+                <select className="staff__input" value={f.menuOrder} onChange={set('menuOrder')}>
+                  {Array.from({ length: nextOrder(f.category) }, (_, i) => (
+                    <option key={i} value={String(i + 1)}>
+                      {i + 1 + ' of ' + nextOrder(f.category) + (i === 0 ? ' (first)' : '')}
+                    </option>
+                  ))}
+                </select>,
               )}
             </div>
             {field(
@@ -636,7 +697,12 @@ function DishDialog(props: {
                 value={f.category}
                 onChange={(e) => {
                   const c = e.target.value;
-                  setF((x) => ({ ...x, category: c, ...(isNew ? { menuOrder: String(nextOrder(c)) } : {}) }));
+                  setF((x) => ({
+                    ...x,
+                    category: c,
+                    // a dish that changes section goes to its end unless a place is chosen there
+                    menuOrder: c === item?.category ? String(placeNow(item)) : String(nextOrder(c)),
+                  }));
                 }}
               >
                 {M.categories.map((c) => (

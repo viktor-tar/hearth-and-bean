@@ -178,7 +178,11 @@ export const menuAdminSchema = z.object({
 export type MenuAdmin = z.infer<typeof menuAdminSchema>;
 
 export const menuItemResultSchema = z.object({ item: menuItemSchema });
-export const menuPublishSchema = z.object({ published: z.number() });
+export const menuPublishSchema = z.object({
+  published: z.number(),
+  queued: z.boolean().default(false),
+  retryIn: z.number().default(0),
+});
 export const menuPhotoDataSchema = z.object({ id: z.string(), type: text, data: z.string() });
 
 /* ---------------- the call ---------------- */
