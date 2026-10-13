@@ -194,13 +194,36 @@ interface CallOptions {
   timeoutMs: number;
 }
 
-/** Sends one request to the web app and returns the checked answer. Throws ApiError. */
+/** Requests that only read, so asking twice is harmless. */
+const SAFE_TO_REPEAT = new Set(['config', 'availability', 'login', 'day', 'menuAdmin', 'menuPhoto']);
+
+/**
+ * Sends one request to the web app and returns the checked answer. Throws ApiError.
+ * Google now and then loses an answer on its way back (the request hangs or a wrong page arrives); a request that
+ * only reads is then sent once more. Requests that change something are never repeated, so nothing is saved twice.
+ */
 export async function callApi<T>(
   body: Record<string, unknown>,
   schema: z.ZodType<T>,
   opts: CallOptions,
 ): Promise<T> {
   if (!BOOKING_API) throw new ApiError('The booking sheet is not connected to this page yet.', 'off');
+  const again = SAFE_TO_REPEAT.has(String(body.action));
+  try {
+    return await callOnce(body, schema, opts);
+  } catch (e) {
+    const code = (e as ApiError).code;
+    if (!again || (code !== 'network' && code !== 'shape')) throw e;
+    await new Promise((ok) => setTimeout(ok, 1200));
+    return callOnce(body, schema, opts);
+  }
+}
+
+async function callOnce<T>(
+  body: Record<string, unknown>,
+  schema: z.ZodType<T>,
+  opts: CallOptions,
+): Promise<T> {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), opts.timeoutMs);
   let raw: unknown;

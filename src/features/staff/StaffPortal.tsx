@@ -189,7 +189,7 @@ function Login({ message, onSignedIn }: { message: string; onSignedIn: (s: Sessi
     try {
       const r = await callApi({ action: 'login', username: u, password: p }, loginSchema, {
         offline: OFFLINE,
-        timeoutMs: 30000,
+        timeoutMs: 20000,
       });
       onSignedIn({ token: r.token, name: r.name, expires: r.expires });
     } catch (e2) {
