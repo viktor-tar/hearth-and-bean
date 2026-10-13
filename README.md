@@ -27,7 +27,7 @@ A café-restaurant website with online table booking and a staff portal for mana
 | ---------- | -------------------------------------------------------------------------- |
 | Frontend   | Next.js 16 (App Router, static export), React 19, TypeScript (strict)      |
 | Data       | TanStack Query (queries, mutations, background refresh), native `fetch`    |
-| Validation | Zod for every API response and form                                       |
+| Validation | Zod for every API response and form                                        |
 | Animation  | GSAP with ScrollTrigger, Draggable and Inertia                             |
 | Backend    | Google Apps Script web app over Google Sheets; menu photos in Google Drive |
 | Hosting    | Netlify, deployed from GitHub; menu changes trigger a build hook           |
