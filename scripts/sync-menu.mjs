@@ -79,12 +79,40 @@ const itemSchema = z
 const menuSchema = z.object({ items: z.array(z.unknown()) });
 const photoDataSchema = z.object({ id: z.string(), type: z.string(), data: z.string().min(1) });
 
-async function call(body) {
-  const res = await fetch(API, { method: 'POST', body: JSON.stringify(body), redirect: 'follow' });
-  if (!res.ok) throw new Error(`the booking web app answered ${res.status}`);
-  const json = await res.json();
-  if (!json.ok) throw new Error(json.error?.message || 'the booking web app returned an error');
-  return envelope.parse(json);
+/** One request to the web app. Google now and then answers a request with a passing error (a 404 or 5xx page, or a
+    dropped connection), so those are tried again a few times; an error the sheet itself reports is not. */
+async function call(body, tries = 3) {
+  for (let attempt = 1; ; attempt++) {
+    let res;
+    try {
+      res = await fetch(API, {
+        method: 'POST',
+        body: JSON.stringify(body),
+        redirect: 'follow',
+        signal: AbortSignal.timeout(90000),
+      });
+    } catch (e) {
+      if (attempt < tries) {
+        await wait(attempt);
+        continue;
+      }
+      throw new Error(`could not reach the booking web app (${e.message})`);
+    }
+    if (!res.ok) {
+      if (attempt < tries) {
+        await wait(attempt);
+        continue;
+      }
+      throw new Error(`the booking web app answered ${res.status}`);
+    }
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error?.message || 'the booking web app returned an error');
+    return envelope.parse(json);
+  }
+}
+function wait(attempt) {
+  console.log(`menu: the booking web app did not answer, trying again (${attempt})…`);
+  return new Promise((ok) => setTimeout(ok, attempt * 5000));
 }
 
 function fail(lines) {
