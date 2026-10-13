@@ -85,37 +85,51 @@ function hbMenuSave_(req, who) {
     var rowNo = target ? target._row : Math.max(1, sh.getLastRow()) + 1;
     // the dish takes the asked place in its section and the section is numbered 1, 2, 3... again, so no two dishes
     // share a number (a dish that moved to another section also closes the gap it left)
-    var order = hbMenuPlace_(rows, target, rowNo, f.category, f['menu order']);
+    var order = hbMenuPlace_(rows, target, rowNo, 'category', f.category, 'menu order', f['menu order']);
     f['menu order'] = order[rowNo];
+    // the same for the home page: places inside the chosen group are numbered 1, 2, 3... again
+    var home = hbMenuPlace_(rows, target, rowNo, 'home group', f['home group'], 'home order', f['home order'] || 999);
+    if (f['home group']) f['home order'] = home[rowNo];
+    else delete home[rowNo];
     var values = head.map(function (h) {
       if (h in f) return hbCell_(f[h]);
       if (h === 'photo') return target ? hbCell_(target.photo || '') : '';
       return target && h in target ? hbCell_(target[h]) : '';
     });
     sh.getRange(rowNo, 1, 1, head.length).setNumberFormat('@').setValues([values]);
-    var col = head.indexOf('menu order') + 1, last = sh.getLastRow();
-    if (col && last > 1) {
-      var cells = sh.getRange(2, col, last - 1, 1).getDisplayValues();
-      Object.keys(order).forEach(function (r) { if (r - 2 < cells.length) cells[r - 2][0] = String(order[r]); });
-      sh.getRange(2, col, last - 1, 1).setNumberFormat('@').setValues(cells);
-    }
+    hbMenuColumn_(sh, head, 'menu order', order);
+    hbMenuColumn_(sh, head, 'home order', home);
     hbMenuTouched_();
     saved = hbMenuItem_(hbRows_(HB_MENU_TAB).filter(function (r) { return r._row === rowNo; })[0], hbMenuPhotos_());
   } finally { lock.releaseLock(); }
   return { item: saved };
 }
 
-/** New positions (row -> number) for the dish's section after placing it at "wanted", and for the section it left. */
-function hbMenuPlace_(rows, target, rowNo, category, wanted) {
-  var byOrder = function (a, b) { return hbInt_(a['menu order'], 0) - hbInt_(b['menu order'], 0) || a._row - b._row; };
+/**
+ * New places (row -> number) after putting the dish at place "wanted" in its group (a menu section, or a home page
+ * group): the group is numbered 1, 2, 3... again, and so is the group the dish left. An empty group places nothing.
+ */
+function hbMenuPlace_(rows, target, rowNo, groupKey, group, orderKey, wanted) {
+  var byOrder = function (a, b) { return hbInt_(a[orderKey], 0) - hbInt_(b[orderKey], 0) || a._row - b._row; };
+  var members = function (g) { return rows.filter(function (r) { return r !== target && r.name && r[groupKey] === g; }).sort(byOrder); };
   var order = {};
-  var section = rows.filter(function (r) { return r !== target && r.name && r.category === category; }).sort(byOrder);
-  section.splice(Math.max(0, Math.min(section.length, wanted - 1)), 0, { _row: rowNo });
-  section.forEach(function (r, i) { order[r._row] = i + 1; });
-  if (target && target.category !== category)
-    rows.filter(function (r) { return r !== target && r.name && r.category === target.category; }).sort(byOrder)
-      .forEach(function (r, i) { order[r._row] = i + 1; });
+  if (group) {
+    var list = members(group);
+    list.splice(Math.max(0, Math.min(list.length, wanted - 1)), 0, { _row: rowNo });
+    list.forEach(function (r, i) { order[r._row] = i + 1; });
+  }
+  if (target && target[groupKey] && target[groupKey] !== group)
+    members(target[groupKey]).forEach(function (r, i) { order[r._row] = i + 1; });
   return order;
+}
+
+/** Writes new numbers (row -> number) into one column of the Menu tab, in a single write. */
+function hbMenuColumn_(sh, head, name, numbers) {
+  var col = head.indexOf(name) + 1, last = sh.getLastRow();
+  if (!col || last < 2 || !Object.keys(numbers).length) return;
+  var cells = sh.getRange(2, col, last - 1, 1).getDisplayValues();
+  Object.keys(numbers).forEach(function (r) { if (r - 2 < cells.length) cells[r - 2][0] = String(numbers[r]); });
+  sh.getRange(2, col, last - 1, 1).setNumberFormat('@').setValues(cells);
 }
 
 /** A new photo for a dish: saved into the photos folder under a fresh name, then written into the dish's row. */

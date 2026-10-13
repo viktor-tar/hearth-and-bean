@@ -410,8 +410,8 @@ const dishFormSchema = z
     name: z.string().trim().min(1, 'Please give the dish a name.').max(80, 'Please keep the name shorter.'),
     price: z
       .string()
-      .trim()
-      .regex(/^£?\d{1,4}(\.\d{1,2})?$/, 'Please write the price like £4.50.'),
+      .transform((v) => v.replace(/\s+/g, ''))
+      .pipe(z.string().regex(/^£?\d{1,4}(\.\d{1,2})?$/, 'Please write the price like £4.50.')),
     category: z.string().min(1, 'Please choose a menu section.'),
     menuOrder: z.coerce
       .number()
@@ -480,6 +480,16 @@ function DishDialog(props: {
     others(it.category).filter(
       (o) => o.menuOrder < it.menuOrder || (o.menuOrder === it.menuOrder && o.row < it.row),
     ).length + 1;
+  /* the same for a home page group */
+  const homeOthers = (g: string) =>
+    M.items
+      .filter((i) => i.homeGroup === g && i.row !== item?.row)
+      .sort((a, b) => a.homeOrder - b.homeOrder || a.row - b.row);
+  const homeCount = (g: string) => homeOthers(g).length + 1;
+  const homeNow = (it: MenuItem) =>
+    homeOthers(it.homeGroup).filter(
+      (o) => o.homeOrder < it.homeOrder || (o.homeOrder === it.homeOrder && o.row < it.row),
+    ).length + 1;
   const [f, setF] = useState(() =>
     item
       ? {
@@ -489,7 +499,7 @@ function DishDialog(props: {
           menuOrder: String(placeNow(item)),
           description: item.description,
           homeGroup: item.homeGroup,
-          homeOrder: item.homeOrder ? String(item.homeOrder) : '',
+          homeOrder: item.homeGroup ? String(homeNow(item)) : '',
           active: item.active,
         }
       : {
@@ -725,7 +735,23 @@ function DishDialog(props: {
             <div className="staff__grid2">
               {field(
                 'On the home page',
-                <select className="staff__input" value={f.homeGroup} onChange={set('homeGroup')}>
+                <select
+                  className="staff__input"
+                  value={f.homeGroup}
+                  onChange={(e) => {
+                    const g = e.target.value;
+                    setF((x) => ({
+                      ...x,
+                      homeGroup: g,
+                      // joining a group puts the dish at its end unless a place is chosen there
+                      homeOrder: !g
+                        ? ''
+                        : g === item?.homeGroup
+                          ? String(homeNow(item))
+                          : String(homeCount(g)),
+                    }));
+                  }}
+                >
                   <option value="">Not shown there</option>
                   {M.homeGroups.map((g) => (
                     <option key={g} value={g}>
@@ -737,14 +763,13 @@ function DishDialog(props: {
               {f.homeGroup &&
                 field(
                   'Home page position',
-                  <input
-                    className="staff__input"
-                    type="number"
-                    min={1}
-                    max={99}
-                    value={f.homeOrder}
-                    onChange={set('homeOrder')}
-                  />,
+                  <select className="staff__input" value={f.homeOrder} onChange={set('homeOrder')}>
+                    {Array.from({ length: homeCount(f.homeGroup) }, (_, i) => (
+                      <option key={i} value={String(i + 1)}>
+                        {i + 1 + ' of ' + homeCount(f.homeGroup) + (i === 0 ? ' (first)' : '')}
+                      </option>
+                    ))}
+                  </select>,
                 )}
             </div>
             <label className="staff__check">
