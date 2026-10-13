@@ -8,53 +8,105 @@ A café-restaurant website with online table booking and a staff portal for mana
 
 ## Features
 
-- **Table booking.** Guests choose party size, date and seating area and see only the times that are really free for
-  their party.
-- **Staff portal (`/staff`).** Signed-in staff answer requests, add phone bookings and walk-ins, and seat or move
-  guests on a live table plan with a time slider.
-- **Menu editor.** Staff edit dishes, prices, order and photos, or hide a dish. Saving publishes the change to the
-  website automatically, usually within a minute.
-- **Pages.** A scroll-driven home page (canvas film, GSAP animations), a full menu with sticky section tabs, and an
-  about page.
-- **Accessibility.** Every control works with the keyboard, pop-ups follow the ARIA dialog and listbox patterns, and
-  reduced-motion visitors get a still, fully readable page.
+### Table booking (guests)
+
+- Guests choose the party size, date and seating area (window, fireside, room or bar).
+- Only times with a free table for that party are offered, based on opening hours, table sizes and existing bookings.
+- A request is saved as **pending** with a reference number. The guest gets a confirmation email and the restaurant
+  gets a notification with a link to the staff portal.
+- Built-in spam protection: a hidden honeypot field, an hourly request limit and a duplicate-booking check.
+
+### Staff portal: bookings (`/staff`)
+
+- Staff sign in with their own name and password.
+- **Requests:** new online requests can be confirmed or declined, and the guest is emailed automatically.
+- **Day view:** every booking of the day with a summary of bookings and covers. Staff can add phone bookings and
+  walk-ins, edit details, and mark guests as seated, finished or no-show.
+- **Table plan:** an interactive floor plan with a time slider. It shows which tables are taken at any moment, and a
+  booking can be moved to another table.
+- The system picks a suitable table for every booking and refuses any change that would double-book a table.
 
 ![Staff portal: bookings and menu editor](docs/screenshots/staff-portal.jpg)
 
-## Tech stack
+### Staff portal: menu editor
 
-| Area       | Technology                                                                 |
-| ---------- | -------------------------------------------------------------------------- |
-| Frontend   | Next.js 16 (App Router, static export), React 19, TypeScript (strict)      |
-| Data       | TanStack Query (queries, mutations, background refresh), native `fetch`    |
-| Validation | Zod for every API response and form                                        |
-| Animation  | GSAP with ScrollTrigger, Draggable and Inertia                             |
-| Backend    | Google Apps Script web app over Google Sheets; menu photos in Google Drive |
-| Hosting    | Netlify, deployed from GitHub; menu changes trigger a build hook           |
-| Tooling    | ESLint, Prettier                                                           |
+- Lists every dish with its photo, price and section, with search and section filters.
+- Staff can add a dish, edit its name, description and price, or hide it from the website without deleting it.
+- Dish photos are uploaded straight from the browser. Large images are resized before upload.
+- Staff choose a dish's position in its menu section and whether it appears on the home page.
+- Saving publishes the change: the website rebuilds itself with the new menu, without a developer.
 
-## How it works
+### Website
 
-```
-Browser (static Next.js pages)
-  └── TanStack Query ── fetch ──► Apps Script web app ──► Google Sheet (bookings, tables, hours, staff, menu)
-                                                      └─► Google Drive (dish photos)
-Netlify build
-  └── sync-menu: Menu tab + photos ──► Zod ──► typed menu data + static images ──► next build
-```
-
-- **Static site.** All pages are pre-rendered at build time, so the site loads fast and needs no server of its own.
-  Only the booking form and the staff portal load live data.
-- **Typed API layer.** `src/lib/booking-api.ts` is the single client for the backend. Every response is validated
-  with Zod, so the UI only works with typed, checked data.
-- **Server-side business rules.** Availability, table assignment and booking statuses are enforced in the backend,
-  which prevents double bookings.
-- **Secure staff access.** Staff sign in with signed tokens that expire after 12 hours, and every staff action is
-  verified on the server.
-- **Content managed by staff.** Dishes are stored in Google Sheets and Drive and edited in the staff portal. Saving
-  triggers a Netlify rebuild, so the public menu updates without a developer.
+- A scroll-driven home page with a canvas "film" and GSAP animations, a full menu with sticky section tabs, and an
+  about page.
+- Accessible: everything works with the keyboard, pop-ups follow ARIA patterns, and visitors who prefer reduced motion
+  get a still page.
 
 ![Menu page](docs/screenshots/menu.jpg)
+
+## Architecture
+
+```
+Next.js site (Netlify)  ──POST requests──►  Google Apps Script web app  ──►  Google Sheets (all data)
+                                                                       └─►  Google Drive (dish photos)
+                                                                       └─►  Gmail (booking emails)
+Staff saves the menu  ──►  Netlify build hook  ──►  site rebuilt with the latest menu
+```
+
+### Frontend
+
+The website is built with Next.js and exported as static pages, so it loads fast and needs no server of its own. The
+booking form and the staff portal talk to the backend through one typed API client (`src/lib/booking-api.ts`). It uses
+TanStack Query for loading and saving data, and every response is validated with Zod before it reaches the UI.
+
+### Backend: Google Apps Script
+
+The backend is a Google Apps Script web app (`google-apps-script/`) published at a single URL. The site sends it JSON
+requests, and the script reads and writes the Google Sheet, stores photos in Google Drive and sends emails. All
+booking rules are enforced here, under a lock, so two people can never take the same table at the same time.
+
+| Request                                   | Used by       | What it does                                                    |
+| ----------------------------------------- | ------------- | --------------------------------------------------------------- |
+| `config`                                  | Booking form  | Opening hours, seating areas, party size limits                 |
+| `availability`                            | Booking form  | Free times for a date and party size                            |
+| `book`                                    | Booking form  | Saves a request, picks a table, emails the guest and restaurant |
+| `login`                                   | Staff portal  | Checks the password and returns a signed token (valid 12 hours) |
+| `day`                                     | Staff portal  | Bookings, requests and tables for one day                       |
+| `setStatus`, `assign`, `create`, `update` | Staff portal  | Confirm or decline, move tables, add and edit bookings          |
+| `menuAdmin`, `menuSave`, `menuUpload`     | Menu editor   | List, save and add photos to dishes                             |
+| `menuPublish`                             | Menu editor   | Triggers a Netlify rebuild so the menu goes live                |
+| `menu`, `menuPhoto`                       | Netlify build | Downloads the menu and photos into the site                     |
+
+Every staff request carries the signed token and is checked on the server.
+
+### Data: Google Sheets and Drive
+
+The Google Sheet works as the database, so the restaurant can also view and edit everything in a familiar
+spreadsheet.
+
+| Tab      | Holds                                                                     |
+| -------- | ------------------------------------------------------------------------- |
+| Bookings | Every booking: guest details, date, time, table, status, who changed it   |
+| Tables   | Table sizes, seating areas and positions on the floor plan                |
+| Hours    | Opening hours for each day of the week                                    |
+| Settings | Restaurant email, booking rules (slot length, notice, party size, emails) |
+| Staff    | Staff names and passwords                                                 |
+| Menu     | Dishes: name, description, price, section, position, photo, visibility    |
+
+Dish photos are stored in a Google Drive folder and copied into the site when it is built.
+
+## Tech stack
+
+| Area       | Technology                                                            |
+| ---------- | --------------------------------------------------------------------- |
+| Frontend   | Next.js 16 (App Router, static export), React 19, TypeScript (strict) |
+| Data       | TanStack Query, native `fetch`                                        |
+| Validation | Zod for every API response and form                                   |
+| Animation  | GSAP with ScrollTrigger, Draggable and Inertia                        |
+| Backend    | Google Apps Script, Google Sheets, Google Drive, Gmail                |
+| Hosting    | Netlify, deployed from GitHub, with a build hook for menu updates     |
+| Tooling    | ESLint, Prettier                                                      |
 
 ## Project structure
 
