@@ -51,8 +51,9 @@ Netlify build
   `google-apps-script/Code.gs` under a lock, so two guests can never take the same table.
 - **Staff sign-in.** Passwords stay in the Sheet; a sign-in returns an HMAC-signed token that expires after 12 hours,
   and every staff action is verified on the server.
-- **Menu publishing.** The build downloads the menu, validates every row and stops on a broken one instead of
-  publishing it. Unchanged photos are copied from the live site, so only new ones are downloaded.
+- **Menu publishing.** When staff save a dish, the website is rebuilt with the new menu. If a dish in the Sheet has a
+  mistake (for example, a missing price), the update stops and the website keeps the previous menu, so visitors never
+  see a broken page. Photos that haven't changed are reused, which keeps each update to about 20 seconds.
 
 ![Menu page](docs/screenshots/menu.jpg)
 
