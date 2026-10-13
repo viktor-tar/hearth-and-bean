@@ -79,9 +79,10 @@ const itemSchema = z
 const menuSchema = z.object({ items: z.array(z.unknown()) });
 const photoDataSchema = z.object({ id: z.string(), type: z.string(), data: z.string().min(1) });
 
-/** One request to the web app. Google now and then answers a request with a passing error (a 404 or 5xx page, or a
-    dropped connection), so those are tried again a few times; an error the sheet itself reports is not. */
-async function call(body, tries = 3) {
+/** One request to the web app, checked against the answer expected. Google now and then answers with a passing error
+    (a 404 or 5xx page, a dropped connection, or the wrong page altogether), so those are tried again a few times; an
+    error the sheet itself reports is not. */
+async function call(body, schema, tries = 4) {
   for (let attempt = 1; ; attempt++) {
     let res;
     try {
@@ -105,13 +106,20 @@ async function call(body, tries = 3) {
       }
       throw new Error(`the booking web app answered ${res.status}`);
     }
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error?.message || 'the booking web app returned an error');
-    return envelope.parse(json);
+    const json = await res.json().catch(() => null);
+    if (json && json.ok === false)
+      throw new Error(json.error?.message || 'the booking web app returned an error');
+    const parsed = envelope.and(schema).safeParse(json);
+    if (parsed.success) return parsed.data;
+    if (attempt < tries) {
+      await wait(attempt);
+      continue;
+    }
+    throw new Error(`the booking web app sent an unexpected answer to "${body.action}"`);
   }
 }
 function wait(attempt) {
-  console.log(`menu: the booking web app did not answer, trying again (${attempt})…`);
+  console.log(`menu: the booking web app did not answer properly, trying again (${attempt})…`);
   return new Promise((ok) => setTimeout(ok, attempt * 5000));
 }
 
@@ -129,7 +137,7 @@ async function main() {
     return;
   }
   console.log('menu: reading the Menu tab…');
-  const raw = menuSchema.parse(await call({ action: 'menu' }));
+  const raw = await call({ action: 'menu' }, menuSchema);
   const problems = [],
     items = [];
   raw.items.forEach((x) => {
@@ -158,7 +166,7 @@ async function main() {
   async function worker() {
     while (queue.length) {
       const p = queue.shift();
-      const r = photoDataSchema.parse(await call({ action: 'menuPhoto', id: p.id }));
+      const r = await call({ action: 'menuPhoto', id: p.id }, photoDataSchema);
       const base = slug(p.name.replace(/\.[a-z0-9]+$/i, '')) || 'dish';
       const file = `${base}-${p.updated.toString(36)}${EXT[p.type]}`;
       fs.writeFileSync(path.join(PHOTO_DIR, file), Buffer.from(r.data, 'base64'));
@@ -166,7 +174,7 @@ async function main() {
       done++;
     }
   }
-  await Promise.all(Array.from({ length: 6 }, worker));
+  await Promise.all(Array.from({ length: 3 }, worker));
   console.log(`menu: ${items.length} dishes, ${done} photos`);
 
   const dishes = items.map((it) => ({
