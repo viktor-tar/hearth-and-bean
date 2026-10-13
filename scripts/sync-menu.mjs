@@ -18,6 +18,9 @@ const SNAPSHOT = path.join(root, 'src/data/menu.snapshot.json');
 const PHOTO_DIR = path.join(root, 'public/images/menu');
 /* photos already downloaded by an earlier build, kept by Drive id and version (Netlify keeps node_modules between builds) */
 const CACHE_DIR = path.join(root, 'node_modules/.cache/hearth-menu-photos');
+/* the published site: its photos (listed in /images/menu/index.json by Drive id and version) are copied from there
+   instead of asking the sheet again, so a build only downloads new or changed photos from Drive */
+const LIVE = (process.env.NEXT_PUBLIC_SITE_URL || process.env.URL || '').replace(/\/$/, '');
 
 /* .env.local is not loaded by Node itself: read the one variable we need from it */
 function env(name) {
@@ -86,42 +89,46 @@ const photoDataSchema = z.object({ id: z.string(), type: z.string(), data: z.str
     error the sheet itself reports is not. */
 async function call(body, schema, tries = 4) {
   for (let attempt = 1; ; attempt++) {
-    let res;
+    let why;
     try {
-      res = await fetch(API, {
+      const res = await fetch(API, {
         method: 'POST',
         body: JSON.stringify(body),
         redirect: 'follow',
         signal: AbortSignal.timeout(90000),
       });
+      const text = await res.text();
+      let json = null;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        /* not JSON: described below */
+      }
+      if (json && json.ok === false)
+        throw Object.assign(new Error(json.error?.message || 'the booking web app returned an error'), {
+          final: true,
+        });
+      const parsed = json && envelope.and(schema).safeParse(json);
+      if (parsed?.success) return parsed.data;
+      why = !res.ok
+        ? `HTTP ${res.status}`
+        : json
+          ? `an answer without the expected fields (${Object.keys(json).join(', ')})`
+          : `a ${res.headers.get('content-type') || 'non-JSON'} page: "${text
+              .replace(/<[^>]*>|\s+/g, ' ')
+              .trim()
+              .slice(0, 80)}"`;
     } catch (e) {
-      if (attempt < tries) {
-        await wait(attempt);
-        continue;
-      }
-      throw new Error(`could not reach the booking web app (${e.message})`);
+      if (e.final) throw e;
+      why = `no answer (${e.message})`;
     }
-    if (!res.ok) {
-      if (attempt < tries) {
-        await wait(attempt);
-        continue;
-      }
-      throw new Error(`the booking web app answered ${res.status}`);
-    }
-    const json = await res.json().catch(() => null);
-    if (json && json.ok === false)
-      throw new Error(json.error?.message || 'the booking web app returned an error');
-    const parsed = envelope.and(schema).safeParse(json);
-    if (parsed.success) return parsed.data;
-    if (attempt < tries) {
-      await wait(attempt);
-      continue;
-    }
-    throw new Error(`the booking web app sent an unexpected answer to "${body.action}"`);
+    if (attempt >= tries)
+      throw new Error(`the booking web app did not answer "${body.action}" properly: ${why}`);
+    await wait(attempt, `${body.action}: ${why}`);
   }
 }
-function wait(attempt) {
-  console.log(`menu: the booking web app did not answer properly, trying again (${attempt})…`);
+function wait(attempt, why) {
+  console.log(`menu: ${why}; trying again (${attempt})…`);
   return new Promise((ok) => setTimeout(ok, attempt * 5000));
 }
 
@@ -130,6 +137,32 @@ function fail(lines) {
     '\n✖ Menu not published. Fix the Menu tab and publish again:\n  ' + lines.join('\n  ') + '\n',
   );
   process.exit(1);
+}
+
+/** The live site's photo index (Drive id:version -> file), or an empty one when it cannot be read. */
+async function liveIndex() {
+  if (!LIVE) return {};
+  try {
+    const r = await fetch(`${LIVE}/images/menu/index.json`, { signal: AbortSignal.timeout(20000) });
+    return r.ok ? z.record(z.string(), z.string()).parse(await r.json()) : {};
+  } catch {
+    return {};
+  }
+}
+let liveFiles = {};
+/** Copies a photo from the live site into the cache when that exact version is published there. */
+async function fromLive(p, cached) {
+  const file = liveFiles[`${p.id}:${p.updated}`];
+  if (!file) return false;
+  try {
+    const r = await fetch(LIVE + file, { signal: AbortSignal.timeout(30000) });
+    const bytes = r.ok ? Buffer.from(await r.arrayBuffer()) : null;
+    if (!bytes || bytes.length !== p.size) return false;
+    fs.writeFileSync(cached, bytes);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function main() {
@@ -167,7 +200,9 @@ async function main() {
   const wanted = new Set();
   const queue = [...new Map(items.map((it) => [it.photo.id, it.photo])).values()];
   let done = 0,
-    reused = 0;
+    reused = 0,
+    fromSite = 0;
+  liveFiles = await liveIndex();
   async function worker() {
     while (queue.length) {
       const p = queue.shift();
@@ -176,6 +211,7 @@ async function main() {
       const cached = path.join(CACHE_DIR, `${p.id}-${p.updated}-${p.size}${EXT[p.type]}`);
       wanted.add(path.basename(cached));
       if (fs.existsSync(cached) && fs.statSync(cached).size === p.size) reused++;
+      else if (await fromLive(p, cached)) fromSite++;
       else {
         const r = await call({ action: 'menuPhoto', id: p.id }, photoDataSchema);
         fs.writeFileSync(cached, Buffer.from(r.data, 'base64'));
@@ -187,7 +223,9 @@ async function main() {
   }
   await Promise.all(Array.from({ length: 3 }, worker));
   for (const f of fs.readdirSync(CACHE_DIR)) if (!wanted.has(f)) fs.rmSync(path.join(CACHE_DIR, f));
-  console.log(`menu: ${items.length} dishes, ${done} photos downloaded, ${reused} unchanged`);
+  console.log(
+    `menu: ${items.length} dishes; photos: ${done} from Drive, ${fromSite} from the live site, ${reused} cached`,
+  );
 
   const dishes = items.map((it) => ({
     name: it.name,
