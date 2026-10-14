@@ -19,7 +19,7 @@ Every answer has `ok`. On success the fields described below are added; on failu
 machine-readable `code` and a message that can be shown to the user.
 
 ```json
-{ "ok": true, "ref": "HB-1042", "status": "pending" }
+{ "ok": true, "ref": "HB-PH4L", "status": "pending" }
 ```
 
 ```json
@@ -181,7 +181,7 @@ Moves a booking to another table, or lets the system pick one when `table` is em
 
 | Field                             | Description                                                                       |
 | --------------------------------- | --------------------------------------------------------------------------------- |
-| `id`, `ref`                       | Internal id and the reference shown to the guest (`HB-1042`)                      |
+| `id`, `ref`                       | Internal id and the reference shown to the guest (`HB-PH4L`)                      |
 | `date`, `time`                    | When the booking starts                                                           |
 | `guests`, `duration`              | Party size and how long the table is held, in minutes                             |
 | `name`, `email`, `phone`, `notes` | Guest details                                                                     |

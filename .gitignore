@@ -11,3 +11,11 @@ next-env.d.ts
 # generated before each build by scripts/sync-menu.mjs
 src/data/menu.json
 public/images/menu/
+
+# Playwright
+test-results/
+playwright-report/
+
+# written by `next dev` for AI coding tools
+AGENTS.md
+CLAUDE.md

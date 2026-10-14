@@ -6,6 +6,17 @@ A café-restaurant website with online table booking and a staff portal for mana
 
 ![Scrolling through the Hearth & Bean home page](docs/screenshots/home-scroll.gif)
 
+## Highlights
+
+- **No double bookings.** Every booking change runs on the server under a lock and checks table sizes, opening hours
+  and overlapping bookings, so two guests can never end up at the same table.
+- **Restaurant staff manage the menu themselves.** Dishes, prices and photos are edited in the staff portal and stored
+  in Google Sheets and Drive; saving rebuilds the static site, so updates need no developer.
+- **Type-safe from end to end.** One API client with Zod schemas validates every response before it reaches the UI,
+  with TypeScript in strict mode throughout.
+- **Tested in a real browser.** Playwright tests cover booking, the staff portal and the menu editor against a local
+  copy of the backend.
+
 ## Features
 
 ### Table booking (guests)
@@ -18,7 +29,7 @@ A café-restaurant website with online table booking and a staff portal for mana
 
 ### Staff portal: bookings (`/staff`)
 
-- Staff sign in with their own name and password.
+- Staff sign in with their own username and password.
 - **Requests:** new online requests can be confirmed or declined, and the guest is emailed automatically.
 - **Day view:** every booking of the day with a summary of bookings and covers. Staff can add phone bookings and
   walk-ins, edit details, and mark guests as seated, finished or no-show.
@@ -92,7 +103,7 @@ spreadsheet.
 | Tables   | Table sizes, seating areas and positions on the floor plan                |
 | Hours    | Opening hours for each day of the week                                    |
 | Settings | Restaurant email, booking rules (slot length, notice, party size, emails) |
-| Staff    | Staff names and passwords                                                 |
+| Staff    | Staff accounts and whether each one is active                             |
 | Menu     | Dishes: name, description, price, section, position, photo, visibility    |
 
 Dish photos are stored in a Google Drive folder and copied into the site when it is built.
@@ -107,6 +118,7 @@ Dish photos are stored in a Google Drive folder and copied into the site when it
 | Animation  | GSAP with ScrollTrigger, Draggable and Inertia                        |
 | Backend    | Google Apps Script, Google Sheets, Google Drive, Gmail                |
 | Hosting    | Netlify, deployed from GitHub, with a build hook for menu updates     |
+| Testing    | Playwright end-to-end tests against a local copy of the backend       |
 | Tooling    | ESLint, Prettier                                                      |
 
 ## Project structure
@@ -124,6 +136,7 @@ src/
   styles/           design system CSS and self-hosted fonts
 scripts/            build step that syncs the menu from the Sheet
 google-apps-script/ backend (Code.gs, Menu.gs, MenuAdmin.gs) and a local test server
+tests/e2e/          Playwright tests
 public/             images, film frames, fonts
 ```
 
@@ -139,6 +152,31 @@ npm run dev        # http://localhost:3000
 
 Set `NEXT_PUBLIC_BOOKING_API_URL` in `.env.local` (see `.env.example`). Left empty, the booking form runs in preview
 mode and the committed menu snapshot is used. Other scripts: `npm run build`, `npm run lint`, `npm run typecheck`.
+
+## Testing
+
+```bash
+npx playwright install chromium   # once
+npm run test:e2e
+```
+
+The tests start the mock backend, build the site against it and run in Chromium. Each test starts from fresh data.
+They cover the public pages, a guest booking (including the emails sent), double-booking protection, staff sign-in,
+confirming requests, adding phone bookings, and the menu editor: search and filters, price changes, hiding dishes,
+validation, photo upload and positions.
+
+## Setting up the backend
+
+1. Create a Google Sheet and open **Extensions → Apps Script**. Add the three files from `google-apps-script/`.
+2. Run `setup` once, then `setupMenu`. They create the tabs with default tables, opening hours and settings, a first
+   staff account, the starter menu and a Drive folder for dish photos.
+3. **Deploy → New deployment → Web app**, running as you and accessible to anyone. Copy the web app URL.
+4. Put the URL in `NEXT_PUBLIC_BOOKING_API_URL`, both in `.env.local` and in the Netlify environment variables.
+5. To let staff publish the menu, create a build hook in Netlify and add it to the Settings tab as `menuBuildHook`.
+
+## License
+
+The code is released under the [MIT License](LICENSE).
 
 ## Author
 
