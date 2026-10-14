@@ -4,7 +4,7 @@ A café-restaurant website with online table booking and a staff portal for mana
 
 **Live site:** [hearth-and-bean-bath.netlify.app](https://hearth-and-bean-bath.netlify.app)
 
-![Hearth & Bean home page](docs/screenshots/home.jpg)
+![Scrolling through the Hearth & Bean home page](docs/screenshots/home-scroll.gif)
 
 ## Features
 
