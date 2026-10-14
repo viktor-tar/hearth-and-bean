@@ -78,7 +78,8 @@ booking rules are enforced here, under a lock, so two people can never take the 
 | `menuPublish`                             | Menu editor   | Triggers a Netlify rebuild so the menu goes live                |
 | `menu`, `menuPhoto`                       | Netlify build | Downloads the menu and photos into the site                     |
 
-Every staff request carries the signed token and is checked on the server.
+Every staff request carries the signed token and is checked on the server. Request fields, responses and error
+codes are documented in [docs/API.md](docs/API.md).
 
 ### Data: Google Sheets and Drive
 
