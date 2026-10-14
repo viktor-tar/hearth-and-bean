@@ -9,7 +9,7 @@
  * @OnlyCurrentDoc
  */
 
-var HB_VERSION = '1.1.0';
+var HB_VERSION = '1.2.0';
 
 var HB_TABS = { bookings: 'Bookings', tables: 'Tables', hours: 'Hours', settings: 'Settings', staff: 'Staff' };
 
@@ -529,16 +529,50 @@ function hbLogin_(req) {
   if (fails >= 6) Utilities.sleep(3000);   // slows guessing down without letting a stranger lock staff out
   var match = null;
   hbRows_(HB_TABS.staff).forEach(function (r) {
-    if (hbTrue_(r.active) && r.username && r.username.toLowerCase() === user && r.password && r.password === pass) match = r;
+    if (!match && pass && hbTrue_(r.active) && r.username && r.username.toLowerCase() === user && r.password && hbPasswordOk_(r.password, pass)) match = r;
   });
   if (!match || !user || !pass) {
     cache.put(key, String(fails + 1), 600);
     throw hbErr_('bad_login', 'That username or password is not right.');
   }
   cache.remove(key);
+  if (!hbIsHash_(match.password)) hbStorePassword_(match._row, pass);
   var exp = Date.now() + 12 * 3600 * 1000;
   var payload = Utilities.base64EncodeWebSafe(JSON.stringify({ u: match.username, n: match.name || match.username, exp: exp }), Utilities.Charset.UTF_8);
   return { token: payload + '.' + hbSign_(payload), name: match.name || match.username, expires: exp };
+}
+
+/*
+ * Staff passwords are kept in the Staff tab as a salted, repeated HMAC-SHA256 hash ("hash$rounds$salt$hash"), never
+ * as the password itself. To add a person or reset a password, the owner types the new password into the cell as
+ * plain text: it is accepted once and replaced by its hash at that person's next sign-in.
+ */
+var HB_HASH_ROUNDS = 200;
+
+function hbIsHash_(stored) { return String(stored).indexOf('hash$') === 0; }
+
+function hbHash_(password, salt, rounds) {
+  var h = String(password);
+  for (var i = 0; i < rounds; i++) h = Utilities.base64Encode(Utilities.computeHmacSha256Signature(h, salt, Utilities.Charset.UTF_8));
+  return h;
+}
+
+function hbPasswordOk_(stored, given) {
+  stored = String(stored);
+  if (!hbIsHash_(stored)) return stored === given;
+  var p = stored.split('$'), rounds = hbInt_(p[1], 0);
+  return p.length === 4 && rounds > 0 && !!p[2] && hbHash_(given, p[2], rounds) === p[3];
+}
+
+/** Replaces a plain-text password in the Staff tab with its hash. Never stops a sign-in if the sheet can't be written. */
+function hbStorePassword_(row, password) {
+  try {
+    var sh = hbSheet_(HB_TABS.staff), head = sh.getRange(1, 1, 1, sh.getLastColumn()).getDisplayValues()[0];
+    var col = head.map(function (h) { return String(h).trim(); }).indexOf('password') + 1;
+    if (!col) return;
+    var salt = Utilities.getUuid().replace(/-/g, '');
+    sh.getRange(row, col).setNumberFormat('@').setValue('hash$' + HB_HASH_ROUNDS + '$' + salt + '$' + hbHash_(password, salt, HB_HASH_ROUNDS));
+  } catch (e) { console.warn('Could not hash the password in row ' + row + ': ' + e); }
 }
 
 function hbAuth_(req) {

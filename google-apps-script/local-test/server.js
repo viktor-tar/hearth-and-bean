@@ -17,7 +17,7 @@ http.createServer((req, res) => {
         if (q.delay !== undefined) env.state.delay = q.delay;
         if (q.set) q.set.forEach(([sheet, r, c, v]) => { env.state.sheets[sheet].rows[r][c] = v; });
         if (q.setting) { const rows = env.state.sheets.Settings.rows, i = rows.findIndex(r => r[0] === q.setting[0]); if (i > 0) rows[i][1] = q.setting[1]; }
-        return send({ hooks: env.state.hooks || 0, mails: env.state.mails.map(m => q.full ? m : ({ to: m.to, subject: m.subject })), bookings: env.rows('Bookings'), logs: env.state.logs });
+        return send({ hooks: env.state.hooks || 0, mails: env.state.mails.map(m => q.full ? m : ({ to: m.to, subject: m.subject })), bookings: env.rows('Bookings'), staff: env.rows('Staff'), logs: env.state.logs });
       }
       if (req.method === 'GET') return send(env.get());
       if (env.state.fail === 'down') { res.statusCode = 500; return res.end('down'); }

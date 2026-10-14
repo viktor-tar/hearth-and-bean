@@ -9,7 +9,7 @@ type Row = Record<string, string>;
 /** Test hooks of the mock backend: reset the sheets, change a setting, read sent emails and saved bookings. */
 export async function backend(body: Record<string, unknown> = {}) {
   const res = await fetch(API + '/__test', { method: 'POST', body: JSON.stringify(body) });
-  return (await res.json()) as { mails: Mail[]; bookings: Row[]; hooks: number };
+  return (await res.json()) as { mails: Mail[]; bookings: Row[]; staff: Row[]; hooks: number };
 }
 
 /** A request to the backend, exactly as the site sends it. */

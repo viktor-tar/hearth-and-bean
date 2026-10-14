@@ -97,14 +97,14 @@ codes are documented in [docs/API.md](docs/API.md).
 The Google Sheet works as the database, so the restaurant can also view and edit everything in a familiar
 spreadsheet.
 
-| Tab      | Holds                                                                     |
-| -------- | ------------------------------------------------------------------------- |
-| Bookings | Every booking: guest details, date, time, table, status, who changed it   |
-| Tables   | Table sizes, seating areas and positions on the floor plan                |
-| Hours    | Opening hours for each day of the week                                    |
-| Settings | Restaurant email, booking rules (slot length, notice, party size, emails) |
-| Staff    | Staff accounts and whether each one is active                             |
-| Menu     | Dishes: name, description, price, section, position, photo, visibility    |
+| Tab      | Holds                                                                      |
+| -------- | -------------------------------------------------------------------------- |
+| Bookings | Every booking: guest details, date, time, table, status, who changed it    |
+| Tables   | Table sizes, seating areas and positions on the floor plan                 |
+| Hours    | Opening hours for each day of the week                                     |
+| Settings | Restaurant email, booking rules (slot length, notice, party size, emails)  |
+| Staff    | Staff accounts; passwords are stored as salted hashes, never as plain text |
+| Menu     | Dishes: name, description, price, section, position, photo, visibility     |
 
 Dish photos are stored in a Google Drive folder and copied into the site when it is built.
 

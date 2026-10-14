@@ -100,6 +100,9 @@ Creates a booking request. A table is picked automatically, and the guest and re
 
 **Errors:** `bad_login`. Repeated failed attempts are slowed down.
 
+Passwords are stored in the Staff tab as salted, repeated HMAC-SHA256 hashes. A password typed into the tab as plain
+text (a new account or a reset) is accepted once and replaced by its hash at that person's next sign-in.
+
 ### `day`
 
 Everything the staff portal shows for one day.

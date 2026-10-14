@@ -11,6 +11,7 @@ function makeEnv(opts) {
   }
   Sheet.prototype.getMaxRows = function () { return this.maxRows; };
   Sheet.prototype.getMaxColumns = function () { return this.maxCols; };
+  Sheet.prototype.getLastColumn = function () { return Math.max(0, ...this.rows.map(r => { let n = r.length; while (n && (r[n - 1] === '' || r[n - 1] == null)) n--; return n; })); };
   Sheet.prototype.getLastRow = function () { let n = this.rows.length; while (n && this.rows[n - 1].every(v => v === '' || v == null)) n--; return n; };
   Sheet.prototype.insertRowsAfter = function (after, n) { this.maxRows += n; };
   Sheet.prototype.setFrozenRows = function () {};

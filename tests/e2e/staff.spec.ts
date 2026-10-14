@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { backend, guestRequest, signIn, STAFF } from './helpers';
+import { api, backend, guestRequest, signIn, STAFF } from './helpers';
 
 test.beforeEach(async () => {
   await backend({ reset: true });
@@ -46,4 +46,22 @@ test('signing out returns to the sign-in form', async ({ page }) => {
   await signIn(page);
   await page.click('.staff__who .staff__btn');
   await expect(page.locator('#staff-pass')).toBeVisible();
+});
+
+test('passwords are stored as a hash after the first sign-in', async () => {
+  const login = (password: string) => api({ action: 'login', username: STAFF.username, password });
+
+  await login(STAFF.password);
+  const stored = (await backend()).staff[0].password;
+  expect(stored).toMatch(/^hash\$\d+\$\w+\$/);
+  expect(stored).not.toContain(STAFF.password);
+
+  await login(STAFF.password); // the hash still accepts the same password
+  await expect(login('wrong-password')).rejects.toThrow(/bad_login/);
+
+  // a reset: the owner types a new password into the Staff tab, and it is hashed at the next sign-in
+  await backend({ set: [['Staff', 1, 1, 'new-pass-2026']] });
+  await login('new-pass-2026');
+  expect((await backend()).staff[0].password).toMatch(/^hash\$/);
+  await expect(login(STAFF.password)).rejects.toThrow(/bad_login/);
 });
