@@ -8,12 +8,13 @@ A café-restaurant website with online table booking and a staff portal for mana
 
 ## Highlights
 
-- **No double bookings.** Every booking change runs on the server under a lock and checks table sizes, opening hours
-  and overlapping bookings, so two guests can never end up at the same table.
+- **No double bookings.** Every booking change is processed one at a time on the server and checked against table
+  sizes, opening hours and existing bookings, so two guests can never end up at the same table.
 - **Restaurant staff manage the menu themselves.** Dishes, prices and photos are edited in the staff portal and stored
-  in Google Sheets and Drive; saving rebuilds the static site, so updates need no developer.
-- **Type-safe from end to end.** One API client with Zod schemas validates every response before it reaches the UI,
-  with TypeScript in strict mode throughout.
+  in Google Sheets and Drive. Saving triggers a Netlify build hook (a link that rebuilds the site), so the website
+  updates without a developer.
+- **Type-safe frontend.** TypeScript in strict mode, and one API client that checks every server response with Zod
+  before the UI uses it.
 - **Tested in a real browser.** Playwright tests cover booking, the staff portal and the menu editor against a local
   copy of the backend.
 
@@ -25,19 +26,23 @@ A café-restaurant website with online table booking and a staff portal for mana
 - Only times with a free table for that party are offered, based on opening hours, table sizes and existing bookings.
 - A request is saved as **pending** with a reference number. The guest gets a confirmation email and the restaurant
   gets a notification with a link to the staff portal.
-- Built-in spam protection: a hidden honeypot field, an hourly request limit and a duplicate-booking check.
+- Built-in spam protection: a hidden field that catches spam bots, an hourly request limit and a duplicate-booking
+  check.
 
 ### Staff portal: bookings (`/staff`)
 
 - Staff sign in with their own username and password.
 - **Requests:** new online requests can be confirmed or declined, and the guest is emailed automatically.
-- **Day view:** every booking of the day with a summary of bookings and covers. Staff can add phone bookings and
-  walk-ins, edit details, and mark guests as seated, finished or no-show.
+- **Day view:** every booking of the day with a summary of bookings and guests (covers). Staff can add phone bookings
+  and walk-ins, edit details, and mark guests as seated, finished or no-show.
 - **Table plan:** an interactive floor plan with a time slider. It shows which tables are taken at any moment, and a
   booking can be moved to another table.
 - The system picks a suitable table for every booking and refuses any change that would double-book a table.
 
 ![Staff portal: bookings and menu editor](docs/screenshots/staff-portal.jpg)
+
+The staff portal is password-protected, so the screenshots show it in use. To try it yourself, run the project
+locally with the mock backend (see [Running locally](#running-locally) for the sign-in details).
 
 ### Staff portal: menu editor
 
@@ -49,10 +54,10 @@ A café-restaurant website with online table booking and a staff portal for mana
 
 ### Website
 
-- A scroll-driven home page with a canvas "film" and GSAP animations, a full menu with sticky section tabs, and an
-  about page.
-- Accessible: everything works with the keyboard, pop-ups follow ARIA patterns, and visitors who prefer reduced motion
-  get a still page.
+- A scroll-driven home page with an image sequence that plays like a film as you scroll, GSAP animations, a full menu
+  with sticky section tabs, and an about page.
+- Accessible: everything works with the keyboard, pop-ups and dialogs close with Escape and keep keyboard focus in
+  the right place, and visitors who prefer reduced motion get a still page.
 
 ![Menu page](docs/screenshots/menu.jpg)
 
@@ -75,7 +80,8 @@ TanStack Query for loading and saving data, and every response is validated with
 
 The backend is a Google Apps Script web app (`google-apps-script/`) published at a single URL. The site sends it JSON
 requests, and the script reads and writes the Google Sheet, stores photos in Google Drive and sends emails. All
-booking rules are enforced here, under a lock, so two people can never take the same table at the same time.
+booking rules are enforced here, and changes are processed one at a time, so two people can never take the same table
+at the same time.
 
 | Request                                   | Used by       | What it does                                                    |
 | ----------------------------------------- | ------------- | --------------------------------------------------------------- |
@@ -132,7 +138,7 @@ src/
     staff/          staff portal: sign-in, day view, table plan, booking dialog, menu editor
     home/, menu/    scroll animations and menu tabs
   lib/              API client with Zod schemas, date helpers
-  data/             menu data and the snapshot used for local work
+  data/             menu data, plus a saved copy used when no backend is connected
   styles/           design system CSS and self-hosted fonts
 scripts/            build step that syncs the menu from the Sheet
 google-apps-script/ backend (Code.gs, Menu.gs, MenuAdmin.gs) and a local test server
@@ -150,8 +156,9 @@ npm run mock-api   # local backend on :8792 (sign-in: staff / local-test-pass)
 npm run dev        # http://localhost:3000
 ```
 
-Set `NEXT_PUBLIC_BOOKING_API_URL` in `.env.local` (see `.env.example`). Left empty, the booking form runs in preview
-mode and the committed menu snapshot is used. Other scripts: `npm run build`, `npm run lint`, `npm run typecheck`.
+Set `NEXT_PUBLIC_BOOKING_API_URL` in `.env.local` (see `.env.example`). Left empty, online booking is switched off:
+the form still shows but sends nothing, and the site uses a saved copy of the menu included in the repo. Other scripts:
+`npm run build`, `npm run lint`, `npm run typecheck`.
 
 ## Testing
 
@@ -170,9 +177,11 @@ validation, photo upload and positions.
 1. Create a Google Sheet and open **Extensions → Apps Script**. Add the three files from `google-apps-script/`.
 2. Run `setup` once, then `setupMenu`. They create the tabs with default tables, opening hours and settings, a first
    staff account, the starter menu and a Drive folder for dish photos.
-3. **Deploy → New deployment → Web app**, running as you and accessible to anyone. Copy the web app URL.
+3. Choose **Deploy → New deployment → Web app**, set **Execute as: Me** and **Who has access: Anyone**, then copy the
+   web app URL.
 4. Put the URL in `NEXT_PUBLIC_BOOKING_API_URL`, both in `.env.local` and in the Netlify environment variables.
-5. To let staff publish the menu, create a build hook in Netlify and add it to the Settings tab as `menuBuildHook`.
+5. To let staff publish the menu, create a build hook in Netlify and add its URL to the Settings tab as
+   `menuBuildHook`.
 
 ## License
 
