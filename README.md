@@ -39,9 +39,9 @@ A café-restaurant website with online table booking and a staff portal for mana
   booking can be moved to another table.
 - The system picks a suitable table for every booking and refuses any change that would double-book a table.
 
-![Staff portal: bookings and menu editor](docs/screenshots/staff-portal.jpg)
+![A booking from the website to the staff portal](docs/screenshots/booking-flow.gif)
 
-The staff portal is password-protected, so the screenshots show it in use. To try it yourself, run the project
+The staff portal is password-protected, so the recordings show it in use. To try it yourself, run the project
 locally with the mock backend (see [Running locally](#running-locally) for the sign-in details).
 
 ### Staff portal: menu editor
@@ -51,6 +51,8 @@ locally with the mock backend (see [Running locally](#running-locally) for the s
 - Dish photos are uploaded straight from the browser. Large images are resized before upload.
 - Staff choose a dish's position in its menu section and whether it appears on the home page.
 - Saving publishes the change: the website rebuilds itself with the new menu, without a developer.
+
+![Changing a price in the menu editor and seeing it on the website](docs/screenshots/menu-update.gif)
 
 ### Website
 
